@@ -9,6 +9,7 @@ end function
 --"""
 --global constant integer idCOLORREF=define_struct(tCOLORREF)
 
+
 constant tCHARRANGE="""
 
 typedef struct _charrange {

@@ -1,0 +1,271 @@
+include tinclasses.ew
+include eumodbus.e
+
+forward procedure showsetup()
+forward procedure icons8()
+forward procedure setslave()
+forward procedure start_connect()
+forward function get_integer(atom handle)
+forward procedure get_dataregister()
+forward procedure getports()
+forward procedure display_values ()
+forward procedure goodbye()
+
+atom ACTIVE = False
+atom ctx = 0
+
+atom pollintervall=200
+atom updateintervall=500
+atom BitRate=9600
+atom ErrCount=0
+atom MaxErrCount=5
+atom ErrCountSum=0
+atom TotalCount=0
+object comports={"COM1:","COM2:","COM3:","COM4:","COM5","COM6:","COM7:","COM8:"}
+atom bullshit=#DEADBEEF
+
+object modregs=repeat(0,10)
+
+-- load resources
+atom connected=LoadIco("usb-connected.ico")
+atom disconnected=LoadIco("usb-not-connected.ico")
+atom font_lucida12 = NewFont("Lucida Sans", 12, False,False,False)
+atom font_lucida10 = NewFont("Lucida Sans", 10, False,False,False)
+atom font_fn_default=FN_DEFAULT
+FN_DEFAULT=font_lucida12
+--{}=create_thread(getports)
+-- create the App with the main Window
+Tapp myApp=new({"ArduLink "})
+myApp.width=900
+myApp.height=300
+myApp.xpos=ScreenWidth()/2 -450
+myApp.ypos=ScreenHeight()/2 -150
+myApp.exitrid=goodbye
+
+-- create the setup dialog
+Tdialog mydialog=new({"Modbus einstellungen"})
+mydialog.icon="slider.ico"
+mydialog.hide()
+mydialog.width=500
+mydialog.height=130
+mydialog.xpos=ScreenWidth()/2 -250
+mydialog.ypos=ScreenHeight()/2 -65
+-- set the app window as parent and set the buttons 
+myApp.parent()
+
+Tstatusbar status= new()
+{}=create_thread(getports,{})
+--Tdialog splash=new({"Modbus scanning Ports"})
+
+myApp.parent()
+
+Tbutton linkicons8=new({"All Icons are from https://Iconduck.com"})
+linkicons8.width=96
+linkicons8.height=96
+linkicons8.xpos=780
+linkicons8.eventhandler(Click,icons8)
+
+Ticonbutton verbindung=new()
+verbindung.width=128
+verbindung.height=128
+verbindung.iconhandle=disconnected
+verbindung.show()
+verbindung.eventhandler(Click,showsetup)
+
+mydialog.parent()
+Tgroup group_rtu =new({"RTU Parameter"})
+group_rtu.xpos=5
+group_rtu.ypos=5
+group_rtu.width=485
+group_rtu.height=80
+
+group_rtu.parent()
+Tdropdown list_com =new()
+list_com.xpos=5
+list_com.ypos=40
+list_com.add(comports)
+
+
+Tdropdown list_slaves =new()
+list_slaves.xpos=100
+list_slaves.ypos=40
+list_slaves.width=30
+list_slaves.add({"1","2","3","4","5","6","7","8"})
+list_slaves.eventhandler(RClick,setslave)
+
+Tdropdown list_speed =new()
+list_speed.xpos=194
+list_speed.ypos=40
+list_speed.add({"1200","2400","4800","9600","19200","38400","57600","115200"})
+
+
+Tbutton button_com=new()
+button_com.caption="Com Ports"
+button_com.xpos=5
+button_com.ypos=15
+button_com.width=82
+button_com.height=25
+button_com.eventhandler(Click,getports)
+
+Tbutton button_slaves=new()
+button_slaves.caption="Slave Id"
+button_slaves.xpos=100
+button_slaves.ypos=15
+button_slaves.width=82
+button_slaves.height=25
+button_slaves.eventhandler(Click,setslave)
+
+Tbutton button_connect=new({"Verbinden"})
+button_connect.xpos=193
+button_connect.ypos=15
+button_connect.width=82
+button_connect.height=25
+button_connect.eventhandler(Click,start_connect)
+
+Tedit edit_slaves = new({"1"})
+edit_slaves.xpos=150
+edit_slaves.ypos=40
+edit_slaves.width=30
+edit_slaves.height=22
+
+Tlabel transfer = new({"Fehler:"})
+transfer.xpos=280
+transfer.width=180
+Ttimer PollTimer =new()
+Ttimer DisplayTimer=new()
+DisplayTimer.ticks=updateintervall
+PollTimer.ticks=pollintervall
+PollTimer.eventhandler(get_dataregister)
+DisplayTimer.eventhandler(display_values)
+
+myApp.run()
+
+-- eventhandler procs
+procedure showsetup()
+    mydialog.show()
+end procedure
+
+procedure icons8()
+object erg
+    --erg=FindExe("x.html")
+    erg=GetAssocExe(".html")
+    RunApp(erg," https://Iconduck.com")
+end procedure
+
+procedure setslave()
+        edit_slaves.text=list_slaves.item()
+end procedure
+
+--##########################################################################################
+procedure start_connect()
+object id,erg
+if ACTIVE  then
+    Void= modbus:Flush(ctx)
+     modbus:Close(ctx)
+     modbus:Free(ctx)
+     --SetWinTimer(0,1)
+     button_connect.caption="Verbinden"
+     verbindung.iconhandle=disconnected
+     status.caption="getrennt"
+     ctx=0
+     ACTIVE=False
+--  tin:SetCheck(button_connect,False)
+    PollTimer.stop()
+    DisplayTimer.stop()
+else
+     --id=value(GetText(edit_slaves))
+     id=get_integer(edit_slaves.handle)
+     if equal(id,bullshit) then
+        InfoMsg("\""&edit_slaves.text&"\""&" ist keine gültige Slave Id","Bullshit")
+        edit_slaves.text="1"
+        return     
+     end if
+     erg=value(list_speed.item())
+     BitRate=erg[2]
+     ctx=modbus:New_Rtu(list_com.item(),BitRate,'N',8,1)
+     if ctx>0 then
+         Void= modbus:Connect(ctx)
+         Void= modbus:Set_Slave(ctx,id)
+          --modbus:Set_Timeout(ctx,0,1000)
+          --SetWinTimer(polltime,1)
+          button_connect.caption="Trennen"
+          verbindung.iconhandle=connected
+          status.caption=("Verbunden "&list_com.item()&" Slave :"&(edit_slaves.text))
+          ACTIVE=True
+          PollTimer.run()
+          DisplayTimer.run()
+          get_dataregister()
+          ErrCount=0
+          ErrCountSum=0
+          TotalCount=0
+     else
+       status.caption=("Verbindung fehlgeschlagen"&list_com.item()) 
+     end if
+end if
+end procedure
+
+--##########################################################################################
+function get_integer(atom handle)
+sequence text=GetText(handle)
+object result
+    result=to_number(text,-1)
+    if result<0 then
+        result=bullshit
+    else
+        result=to_integer(text)
+    end if
+    return result
+end function
+
+--##########################################################################################
+procedure get_dataregister()
+object data=repeat(0,10)
+        data=Read_Registers16u(ctx,0,10)
+            TotalCount+=1
+        if equal(data,"Error") then
+                ErrCount+=1
+                ErrCountSum+=1
+                data=0
+                --?ErrCountSum
+                if ErrCount>MaxErrCount then
+                        start_connect()
+                        if AskMsg("Verbindungsabbruch.\n Neu verbinden?","Verbindungsfehler"&" "&sprintf("%d",ErrCountSum)) then
+                                start_connect()
+                        else
+                                -- do nothing
+                        end if
+                ErrCount=0
+                end if
+                
+        else
+                TotalCount+=1
+                
+                ErrCount=0
+        end if
+        
+        modregs=data
+
+end procedure
+
+--##########################################################################################
+procedure display_values ()
+
+--SetText(label_error,sprintf("%d",ErrCountSum)&"/"&sprintf("%d",TotalCount))
+transfer.caption="Fehlerhaft :"&sprintf("%d",ErrCountSum)&"  Total :"&sprintf("%d",TotalCount)
+?modregs
+end procedure
+
+procedure goodbye()
+    if ACTIVE then
+        start_connect()
+    end if
+end procedure
+
+procedure getports()
+status.caption="Suche Com Ports"
+list_com.clear()
+comports=Scan_Com_Ports()
+list_com.add(comports)
+status.caption="Suche Com Ports beendet"
+--exit_thread(1)
+end procedure

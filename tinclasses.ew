@@ -1,0 +1,415 @@
+with trace
+without warning
+include tinlib.ew as tin
+
+--include console.ew
+
+
+
+
+global class Twindow nullable
+    public atom handle=0
+    public atom exitrid
+    public sequence name=""
+    public sequence exit_title="Beenden"
+    public sequence exit_text="Sind sie sicher?"
+    atom xpos=-1
+    atom ypos=-1
+    atom width=200
+    atom height=400
+    sequence caption
+    
+    procedure parent()
+        SetParentWindow(this.handle)
+    end procedure
+    
+    procedure eventhandler(integer event=Click,object rid=Null)
+    SetHandler(this.handle,event,rid)
+    end procedure
+    
+    procedure show()
+    SetVisible(this.handle,True)
+    end procedure
+    
+    procedure hide()
+    SetVisible(this.handle,False)
+    end procedure
+    
+    procedure set_caption(sequence text)
+        this.caption=text
+        SetText(this.handle,this.caption)
+    end procedure
+    
+    procedure set_xpos(integer x)
+    this.xpos=x
+    SetPos(this.handle,this.xpos,this.ypos)
+    end procedure
+    
+    procedure set_ypos(integer y)
+    this.ypos=y
+    SetPos(this.handle,this.xpos,this.ypos)
+    end procedure
+    
+    procedure set_width(integer x)
+    this.width=x
+    SetDim(this.handle,this.width,this.height)
+    end procedure
+    
+    procedure set_height(integer y)
+    this.height=y
+    SetDim(this.handle,this.width,this.height)
+    end procedure
+    
+    procedure bye()
+    if AskMsg(exit_text,exit_title) then
+        --FreeConsole()
+        call_proc(this.exitrid,{})
+    CloseApp()
+    end if
+    end procedure
+    
+    function Twindow(sequence title="xyz")
+        CloseEventEnabled=True
+        this.handle=Window(title,this.xpos,this.ypos,this.width,this.height)
+        this.eventhandler(tin:Close,{this,this.bye}) --um methoden als eventhandler ueber den tinewg handler aufzurufen muss {this,routine_id} als sequence uebergeben werden
+        this.name=title
+        return this
+    end function
+    
+    procedure ~Twindow()
+        CloseApp()
+    end procedure   
+            
+end class
+
+global Twindow Appwin;
+
+global class Tdialog extends Twindow
+    sequence icon="default.ico" 
+    procedure bye()
+    --if AskMsg("text","title") then
+    --CloseApp()
+    this.hide()
+    end procedure
+    
+    function Tdialog(sequence title="xyz")
+        CloseEventEnabled=True
+        this.handle=Window(title,this.xpos,this.ypos,this.width,this.height)
+        this.eventhandler(tin:Close,{this,this.bye}) --um methoden als eventhandler ueber den tinewg handler aufzurufen muss {this,routine_id} als sequence uebergeben werden
+        this.hide()
+        this.name=title
+        return this
+    end function
+    procedure set_icon(sequence s)
+        atom p = GetParentWindow()
+        this.parent()
+        this.icon=s
+        SetIcon(this.icon)
+        SetParentWindow(p)
+    end procedure
+    
+    procedure ~Tdialog()
+        CloseApp()
+    end procedure
+end class
+
+global class Tapp
+    sequence exit_title="Beenden"
+    sequence exit_text="Sind sie sicher?"
+    atom xpos=-1
+    atom ypos=-1
+    atom width=200
+    atom height=400
+    atom visible=True
+    atom opac=100
+    sequence icon="default.ico"
+    atom exitrid
+
+    procedure parent()
+        SetParentWindow(Appwin.handle)
+    end procedure
+    
+    procedure set_exitrid(integer rid)
+        Appwin.exitrid=rid
+    end procedure 
+    
+    procedure set_xpos(integer x)
+    Appwin.xpos=x
+    end procedure
+    
+    procedure set_ypos(integer y)
+    Appwin.ypos=y
+    end procedure
+    
+    procedure set_width(integer x)
+    Appwin.width=x
+    end procedure
+    
+    procedure set_height(integer y)
+    Appwin.height=y
+    end procedure
+
+    procedure set_icon(sequence s)
+    atom p = GetParentWindow()
+    this.parent()
+    this.icon=s
+    SetIcon(this.icon)
+    SetParentWindow(p)
+    end procedure
+    
+    procedure set_exit_title(sequence s)
+    this.exit_title=s
+    Appwin.exit_title=s
+    end procedure   
+    
+    procedure set_exit_text(sequence s)
+    this.exit_text=s
+    Appwin.exit_text=s
+    end procedure
+    
+    procedure set_opac(integer  o)
+    this.opac=o
+    SetOpacity(Appwin.handle,this.opac)
+    end procedure       
+            
+        
+    function Tapp(sequence title="tinApp")
+        Appwin=new({title})
+        SetIcon(this.icon)
+        Appwin.caption=title
+        Appwin.show()
+        --SetOpacity(Appwin.handle,this.opac)
+        return this
+    end function
+
+    procedure run()
+        WinMain()
+    end procedure
+end class
+
+
+
+
+
+class Tcontrol 
+    public atom handle=0
+    sequence caption=""
+    atom Type=Button
+    atom xpos=5
+    atom ypos=20
+    atom width=80
+    atom height=20
+    sequence tooltip=""
+    
+    
+    function Tcontrol(sequence title="",integer controltype=0)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        this.caption=title
+        return this
+    end function
+    
+    procedure ~Tcontrol()
+        
+    end procedure
+    procedure set_caption(sequence cap)
+        SetText(this.handle,cap)
+        this.caption=cap
+    end procedure
+    
+    function get_caption()
+        return GetText(this.handle)
+    end function
+    
+    procedure show()
+    SetVisible(this.handle,True)
+    end procedure
+    
+    procedure hide()
+    SetVisible(this.handle,False)
+    end procedure
+
+    procedure set_tooltip(sequence tip)
+    this.tooltip=tip
+    AddToolTip(this.handle,tip)
+    end procedure
+    
+    procedure eventhandler(integer event=Click,object  rid=Null)
+    SetHandler(this.handle,event,rid)
+    end procedure
+    
+    
+    procedure set_xpos(integer x)
+    this.xpos=x
+    SetPos(this.handle,this.xpos,this.ypos)
+    end procedure
+    
+    procedure set_ypos(integer y)
+    this.ypos=y
+    SetPos(this.handle,this.xpos,this.ypos)
+    end procedure
+    
+    procedure set_width(integer x)
+    this.width=x
+    SetDim(this.handle,this.width,this.height)
+    end procedure
+    
+    procedure set_height(integer y)
+    this.height=y
+    SetDim(this.handle,this.width,this.height)
+    end procedure       
+end class
+
+global class Tbutton extends Tcontrol
+
+    function Tbutton(sequence title="xyz",integer controltype=Button)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    
+    procedure ~Tbutton()
+        
+    end procedure
+end class
+
+global class Ticonbutton extends Tcontrol   
+    sequence icon=""
+    atom iconhandle=0
+    function Ticonbutton(sequence title="xyz",integer controltype=IconButton)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure set_icon(sequence iconfile)
+        this.icon=iconfile
+        this.iconhandle=LoadIco(this.icon)
+        SetIconToButton(this.handle,this.iconhandle)
+    end procedure
+    procedure set_iconhandle(atom handle)
+        this.iconhandle=handle
+        SetIconToButton(this.handle,this.iconhandle)
+    end procedure
+    function get_iconhandle()
+        return this.iconhandle
+    end function
+end class
+
+global class Tlabel extends Tcontrol
+    function Tlabel(sequence title="xyz",integer controltype=Label)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure left()
+        LabelAdjL(this.handle)
+    end procedure
+    procedure right()
+        LabelAdjR(this.handle)
+    end procedure
+    procedure center()
+        LabelAdjC(this.handle)
+    end procedure   
+    procedure ~Tlabel()
+        
+    end procedure
+end class
+
+global class Tlist extends Tcontrol
+    function Tlist(sequence title="",integer controltype=List)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    
+    procedure ~Tlist()  
+    end procedure
+    procedure clear()
+        ListClear(this.handle)
+    end procedure
+    procedure add(object i)
+        ListAdd(this.handle,i)
+    end procedure
+    procedure seek(integer  i)
+        ListSeek(this.handle,i)
+    end procedure
+    function item()
+        return GetItem(this.handle)
+    end function    
+    function index()
+        return GetIndex(this.handle)
+    end function
+end class
+
+global class Tdropdown extends Tlist
+    function Tdropdown(sequence title="",integer controltype=DropDown)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    -- Pos und size funktionen anpassen siehe GetComboBoxInfo Zeile 2525 tinlib
+end class
+
+
+
+
+global class Tedit extends Tcontrol
+    sequence text=""
+    function Tedit(sequence title="xyz",integer controltype=Edit)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        this.text=title
+        return this
+    end function
+    function get_text()
+        return GetText(this.handle)
+    end function
+    procedure set_text(sequence s)
+        SetText(this.handle,s)
+    end procedure
+    
+end class
+
+global class Tgroup extends Tcontrol
+    function Tgroup(sequence title="Group",integer controltype=Group)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure parent()
+        SetParentWindow(this.handle)
+    end procedure
+    procedure ~Tgroup() 
+    end procedure
+end class
+
+global class Tstatusbar extends Tcontrol
+    function Tstatusbar(sequence title="Status",integer controltype=StatusBar)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure parent()
+        SetParentWindow(this.handle)
+    end procedure
+    procedure ~Tstatusbar() 
+    end procedure
+end class
+
+
+global class Ttimer
+        atom handle=allocate(4)
+public  atom ticks=0
+
+    procedure run()
+        SetWinTimer(this.ticks,this.handle)
+    end procedure
+
+    procedure stop()
+        SetWinTimer(Null,this.handle)   
+    end procedure
+    
+    procedure eventhandler(integer  rid )
+        SetHandler(this.handle,Time,rid)
+    end procedure
+end class

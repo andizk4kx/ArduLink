@@ -1,0 +1,336 @@
+include cffi.e
+
+global function m_bits()
+    return sprintf("%2d",machine_bits())&" bit"
+end function
+
+--global constant tCOLORREF="""
+--typedef DWORD COLORREF;
+--"""
+--global constant integer idCOLORREF=define_struct(tCOLORREF)
+
+constant tCHARRANGE="""
+
+typedef struct _charrange {
+  LONG cpMin;
+  LONG cpMax;
+} CHARRANGE;
+           
+"""
+global constant integer idCHARRANGE=define_struct(tCHARRANGE)
+
+constant tRECT="""
+
+typedef struct _RECT {
+  LONG left;
+  LONG top;
+  LONG right;
+  LONG bottom;
+} RECT, *PRECT;
+           
+"""
+global constant integer idRECT=define_struct(tRECT)
+
+constant tPOINT="""
+
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT, *PPOINT;
+           
+"""
+
+global constant integer idPOINT=define_struct(tPOINT)
+
+constant tRegC = """
+
+typedef struct tagWNDCLASSEX {
+  UINT      cbSize;
+  UINT      style;
+  WNDPROC   lpfnWndProc;
+  int       cbClsExtra;
+  int       cbWndExtra;
+  HINSTANCE hInstance;
+  HICON     hIcon;
+  HCURSOR   hCursor;
+  HBRUSH    hbrBackground;
+  LPCTSTR   lpszMenuName;
+  LPCTSTR   lpszClassName;
+  HICON     hIconSm;
+} WNDCLASSEX, *PWNDCLASSEX;
+           
+"""
+set_unicode(0)
+global constant integer idRegC=define_struct(tRegC)
+global atom pRegC = allocate_struct(idRegC)
+
+constant tMSG="""
+
+typedef struct tagMSG {
+  HWND   hwnd;
+  UINT   message;
+  WPARAM wParam;
+  LPARAM lParam;
+  DWORD  time;
+  POINT  pt;
+} MSG, *PMSG, *LPMSG;
+           
+"""
+
+global constant integer idMSG=define_struct(tMSG)
+global atom MSG=allocate_struct(idMSG)
+
+constant tOFN="""
+
+typedef struct tagOFN {
+  DWORD         lStructSize;
+  HWND          hwndOwner;
+  HINSTANCE     hInstance;
+  LPCTSTR       lpstrFilter;
+  LPTSTR        lpstrCustomFilter;
+  DWORD         nMaxCustFilter;
+  DWORD         nFilterIndex;
+  LPTSTR        lpstrFile;
+  DWORD         nMaxFile;
+  LPTSTR        lpstrFileTitle;
+  DWORD         nMaxFileTitle;
+  LPCTSTR       lpstrInitialDir;
+  LPCTSTR       lpstrTitle;
+  DWORD         Flags;
+  WORD          nFileOffset;
+  WORD          nFileExtension;
+  LPCTSTR       lpstrDefExt;
+  LPARAM        lCustData;
+  LPOFNHOOKPROC lpfnHook;
+  LPCTSTR       lpTemplateName;
+  void          *pvReserved;
+  DWORD         dwReserved;
+  DWORD         FlagsEx;
+} OPENFILENAME, *LPOPENFILENAME;
+           
+"""
+
+global constant integer idOFN=define_struct(tOFN)
+global atom pOFN=allocate_struct(idOFN)
+
+--CHECK PCIDLIST_ABSOLUTE (unknown to Phix) replaced with pvoid
+constant tBROWSEINFO="""
+typedef struct _browseinfo {
+  HWND              hwndOwner;
+  PVOID             pidlRoot;
+  LPTSTR            pszDisplayName;
+  LPCTSTR           lpszTitle;
+  UINT              ulFlags;
+  BFFCALLBACK       lpfn;
+  LPARAM            lParam;
+  int               iImage;
+} BROWSEINFO, *PBROWSEINFO, *LPBROWSEINFO;                 
+"""
+
+global constant integer idBROWSEINFO=define_struct(tBROWSEINFO)
+global atom pBROWSEINFO=allocate_struct(idBROWSEINFO)
+
+
+constant tCOMBOBOXINFO="""
+
+typedef struct tagCOMBOBOXINFO {
+  DWORD cbSize;
+  RECT  rcItem;
+  RECT  rcButton;
+  DWORD stateButton;
+  HWND  hwndCombo;
+  HWND  hwndItem;
+  HWND  hwndList;
+} COMBOBOXINFO, *PCOMBOBOXINFO, *LPCOMBOBOXINFO;
+           
+"""
+
+global constant integer idCOMBOBOXINFO=define_struct(tCOMBOBOXINFO)
+global atom pCOMBOBOXINFO=allocate_struct(idCOMBOBOXINFO)
+
+constant tCOMBOBOXEXITEM="""
+
+typedef struct tagCOMBOBOXEXITEM {
+  UINT    mask;
+  INT_PTR iItem;
+  LPTSTR  pszText;
+  int     cchTextMax;
+  int     iImage;
+  int     iSelectedImage;
+  int     iOverlay;
+  int     iIndent;
+  LPARAM  lParam;
+} COMBOBOXEXITEM, *PCOMBOBOXEXITEM;
+           
+"""
+
+global constant integer idCOMBOBOXEXITEM=define_struct(tCOMBOBOXEXITEM)
+global atom pCOMBOBOXEXITEM=allocate_struct(idCOMBOBOXEXITEM)
+
+constant tMENUITEMINFO="""
+
+typedef struct tagMENUITEMINFO {
+  UINT      cbSize;
+  UINT      fMask;
+  UINT      fType;
+  UINT      fState;
+  UINT      wID;
+  HMENU     hSubMenu;
+  HBITMAP   hbmpChecked;
+  HBITMAP   hbmpUnchecked;
+  ULONG_PTR dwItemData;
+  LPTSTR    dwTypeData;
+  UINT      cch;
+  HBITMAP   hbmpItem;
+} MENUITEMINFO, *LPMENUITEMINFO;
+           
+"""
+
+global constant integer idMENUITEMINFO=define_struct(tMENUITEMINFO)
+global atom pMENUITEMINFO=allocate_struct(idMENUITEMINFO)
+
+constant tPD="""
+#pragma pack(1) 
+typedef struct tagPD {
+  DWORD           lStructSize;
+  HWND            hwndOwner;
+  HGLOBAL         hDevMode;
+  HGLOBAL         hDevNames;
+  HDC             hDC;
+  DWORD           Flags;
+  WORD            nFromPage;
+  WORD            nToPage;
+  WORD            nMinPage;
+  WORD            nMaxPage;
+  WORD            nCopies;
+  HINSTANCE       hInstance;
+  LPARAM          lCustData;
+  LPPRINTHOOKPROC lpfnPrintHook;
+  LPSETUPHOOKPROC lpfnSetupHook;
+  LPCTSTR         lpPrintTemplateName;
+  LPCTSTR         lpSetupTemplateName;
+  HGLOBAL         hPrintTemplate;
+  HGLOBAL         hSetupTemplate;
+} PRINTDLG, *LPPRINTDLG;
+           
+"""
+
+global constant integer idPD=define_struct(tPD)
+global atom pPD=allocate_struct(idPD)
+
+constant tPDEX="""
+
+typedef struct tagPDEX {
+  DWORD            lStructSize;
+  HWND             hwndOwner;
+  HGLOBAL          hDevMode;
+  HGLOBAL          hDevNames;
+  HDC              hDC;
+  DWORD            Flags;
+  DWORD            Flags2;
+  DWORD            ExclusionFlags;
+  DWORD            nPageRanges;
+  DWORD            nMaxPageRanges;
+  LPPRINTPAGERANGE lpPageRanges;
+  DWORD            nMinPage;
+  DWORD            nMaxPage;
+  DWORD            nCopies;
+  HINSTANCE        hInstance;
+  LPCTSTR          lpPrintTemplateName;
+  LPUNKNOWN        lpCallback;
+  DWORD            nPropertyPages;
+  HPROPSHEETPAGE   *lphPropertyPages;
+  DWORD            nStartPage;
+  DWORD            dwResultAction;
+} PRINTDLGEX, *LPPRINTDLGEX;
+           
+"""
+global constant integer idPDEX=define_struct(tPDEX)
+global atom pPDEX=allocate_struct(idPDEX)
+
+constant tDOCINFO="""
+
+typedef struct tagDOCINFO{
+  int     cbSize;
+  LPCTSTR lpszDocName;
+  LPCTSTR lpszOutput;
+  LPCTSTR lpszDatatype;
+  DWORD   fwType;
+} DOCINFO, *LPDOCINFO;
+                   
+"""
+
+global constant integer idDOCINFO=define_struct(tDOCINFO)
+global atom pDOCINFO=allocate_struct(idDOCINFO)
+
+
+constant tINITCOMCON="""
+
+typedef struct tagINITCOMMONCONTROLSEX {
+  DWORD dwSize;
+  DWORD dwICC;
+} INITCOMMONCONTROLSEX, *LPINITCOMMONCONTROLSEX;
+               
+"""
+
+global constant integer idINITCOMCON=define_struct(tINITCOMCON)
+global atom pINITCOMCON=allocate_struct(idINITCOMCON)
+
+constant tBITMAP="""
+typedef struct tagBITMAP {
+  LONG   bmType;
+  LONG   bmWidth;
+  LONG   bmHeight;
+  LONG   bmWidthBytes;
+  WORD   bmPlanes;
+  WORD   bmBitsPixel;
+  LPVOID bmBits;
+} BITMAP, *PBITMAP;            
+"""
+
+global constant integer idBITMAP=define_struct(tBITMAP)
+global atom pBITMAP=allocate_struct(idBITMAP)
+
+--line 3138
+constant tTOOLINFO="""
+
+typedef struct tagTI {
+  UINT      cbSize;
+  UINT      uFlags;
+  HWND      hwnd;
+  UINT_PTR  uId;
+  RECT      rect;
+  HINSTANCE hinst;
+  LPTSTR    lpszText;
+  LPARAM    lParam;
+  void      *lpReserved; 
+} TOOLINFO, *PTOOLINFO, *LPTOOLINFO;
+"""
+
+global constant integer idTOOLINFO=define_struct(tTOOLINFO)
+global atom pTOOLINFO=allocate_struct(idTOOLINFO)
+-- line 3178
+constant tBALLOONTIP="""
+typedef struct tagEDITBALLOONTIP {
+  DWORD   cbStruct;
+  LPCWSTR pszTitle;
+  LPCWSTR pszText;
+  INT     ttiIcon;
+} EDITBALLOONTIP, *PEDITBALLOONTIP;
+           
+"""	
+global constant integer idBALLOONTIP=define_struct(tBALLOONTIP)
+global atom pBALLOONTIP=allocate_struct(idBALLOONTIP)    
+
+constant tFINDTEXTEX="""
+
+typedef struct _findtextex {
+  CHARRANGE chrg;
+  LPCTSTR   lpstrText;
+  CHARRANGE chrgText;
+} FINDTEXTEX;
+"""	
+
+global constant integer idFINDTEXTEX=define_struct(tFINDTEXTEX)
+global atom pFINDTEXTEX=allocate_struct(idFINDTEXTEX)    
+         

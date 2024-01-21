@@ -295,6 +295,28 @@ global class Ticonbutton extends Tcontrol
     end function
 end class
 
+global class Tpicture extends Tcontrol  
+    sequence picture=""
+    atom picturehandle=0
+    function Tpicture(sequence title="xyz",integer controltype=Picture)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure set_picture(sequence picturefile)
+        this.picture=picturefile
+        this.iconhandle=LoadPic(this.picture)
+        SetPic(this.handle,Picture,this.iconhandle)
+    end procedure
+    procedure set_picturehandle(atom handle)
+        this.picturehandle=handle
+        SetPic(this.handle,Picture,this.picturehandle)
+    end procedure
+    function get_picturehandle()
+        return this.picturehandle
+    end function
+end class
+
 global class Tlabel extends Tcontrol
     function Tlabel(sequence title="xyz",integer controltype=Label)
         this.Type=controltype

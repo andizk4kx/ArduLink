@@ -4655,8 +4655,15 @@ poke4(CHOOSEFONT+44,szStyle)  --lpszStyle
 poke4(CHOOSEFONT+48,Null)   --FontType
 poke4(CHOOSEFONT+52,Null)   --SizeMin
 poke4(CHOOSEFONT+56,Null)   --SizeMax
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"lStructSize",get_struct_size(idCHOOSEFONT))
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"hwndOwner",WinHwnd)
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"hDC",Null)
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"lpLogFont",pLOGFONT)
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"iPointSize",Null)
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"Flags",or_all({CF_SCALABLEONLY,CF_BOTH,CF_USESTYLE,CF_INITTOLOGFONTSTRUCT}))
+set_struct_field(idCHOOSEFONT,pCHOOSEFONT,"lpszStyle",szStyle)
 
-Void=c_func(myChooseFont,{CHOOSEFONT})
+Void=c_func(myChooseFont,{pCHOOSEFONT})
 
 --Typedef struct tagLOGFONT {
 --  LONG    lfHeight;       +0
@@ -4674,19 +4681,29 @@ Void=c_func(myChooseFont,{CHOOSEFONT})
 --  BYTE    lfPitchAndFamily;+27    
 -- TCHAR lfFaceName[LF_FACESIZE];+28
 -- } LOGFONT, *PLOGFONT;
-
+--CHECK length of LOGFONT
 if Void then
         LOGFONT=peek4u(CHOOSEFONT+12)
         --fontinfo[2]=floor(peek4s(LOGFONT)*(-0.78))        --fontsize 2
         hdc=c_func(myGetDC,{WinHwnd})
         fontinfo[2]=floor(peek4s(LOGFONT))              --fontsize 2
+        fontinfo[2]=floor(get_struct_field(idLOGFONT,pLOGFONT,"lfHeight"))
         fontinfo[2]=-floor((fontinfo[2]*72)/GetDeviceCaps(hdc,LOGPIXELSY))
         Void=c_func(myReleaseDC,{hdc,WinHwnd})
         fontinfo[3]=peek4u(LOGFONT+16)      -- bold 3
-        fontinfo[4]=peek(LOGFONT+20)        -- italic 4             
+        fontinfo[3]=floor(get_struct_field(idLOGFONT,pLOGFONT,"lfWeight"))
+        
+        fontinfo[4]=peek(LOGFONT+20)        -- italic 4 
+        fontinfo[4]=floor(get_struct_field(idLOGFONT,pLOGFONT,"lfItalic"))          
+        
         fontinfo[5]=peek(LOGFONT+21)    -- underlined 5
-        fontinfo[1]=peek_string(LOGFONT+28)  --fontname 1
+        fontinfo[4]=floor(get_struct_field(idLOGFONT,pLOGFONT,"lfUnderline"))
+        
+        fontinfo[1]=peek_string(pLOGFONT+28)  --fontname 1
+--      fontinfo[1]=(get_struct_field(idLOGFONT,pLOGFONT,"lfFaceName"))
+
 end if
+
 /*end*/
 
 free(LOGFONT)
@@ -5995,7 +6012,7 @@ end function
 
 function LoadPic_old(sequence picture_file,atom gdip=0)
 atom picture_handle
-        picture_handle = LoadImage (Null,picture_file,IMAGE_BITMAP,Null,Null,or_all({LR_LOADFROMFILE}))
+        picture_handle = LoadImage (Null,picture_file,IMAGE_BITMAP,Null,Null,or_all({LR_LOADFROMFILE,LR_LOADTRANSPARENT}))
         if not gdip then
                 if picture_handle<1 then WarnMsg("During LoadPic : "&picture_file,"Error") end if
         end if

@@ -9,7 +9,6 @@ end function
 --"""
 --global constant integer idCOLORREF=define_struct(tCOLORREF)
 
-
 constant tCHARRANGE="""
 
 typedef struct _charrange {
@@ -334,4 +333,54 @@ typedef struct _findtextex {
 
 global constant integer idFINDTEXTEX=define_struct(tFINDTEXTEX)
 global atom pFINDTEXTEX=allocate_struct(idFINDTEXTEX)    
+
+--line 4613
+constant tCHOOSEFONT="""
+
+typedef struct {
+  DWORD        lStructSize;
+  HWND         hwndOwner;
+  HDC          hDC;
+  LPLOGFONT    lpLogFont;
+  INT          iPointSize;
+  DWORD        Flags;
+  COLORREF     rgbColors;
+  LPARAM       lCustData;
+  LPCFHOOKPROC lpfnHook;
+  LPCTSTR      lpTemplateName;
+  HINSTANCE    hInstance;
+  LPTSTR       lpszStyle;
+  WORD         nFontType;
+  INT          nSizeMin;
+  INT          nSizeMax;
+} CHOOSEFONT, *LPCHOOSEFONT;
+"""
+
+           
+global constant integer idCHOOSEFONT=define_struct(tCHOOSEFONT)
+global atom pCHOOSEFONT=allocate_struct(idCHOOSEFONT)    
+
+
+constant tLOGFONT="""
+
+typedef struct tagLOGFONT {
+  LONG  lfHeight;
+  LONG  lfWidth;
+  LONG  lfEscapement;
+  LONG  lfOrientation;
+  LONG  lfWeight;
+  BYTE  lfItalic;
+  BYTE  lfUnderline;
+  BYTE  lfStrikeOut;
+  BYTE  lfCharSet;
+  BYTE  lfOutPrecision;
+  BYTE  lfClipPrecision;
+  BYTE  lfQuality;
+  BYTE  lfPitchAndFamily;
+  TCHAR lfFaceName[LF_FACESIZE];
+} LOGFONT, *PLOGFONT;
+"""	
          
+global constant integer idLOGFONT=define_struct(tLOGFONT)
+global atom pLOGFONT=allocate_struct(idLOGFONT)
+  

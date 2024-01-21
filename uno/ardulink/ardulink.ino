@@ -25,10 +25,12 @@ pinMode(77, OUTPUT);//Connected to a LED
 
 void loop() {
     /* Initialize the first register to have a value to read */
-    tab_reg[0] = 0x1234;
+    tab_reg[0] = 1000;
+    tab_reg[1] = 1001;
     tab_reg[2]=analogRead(A0); //Connected to a Poti
     tab_reg[3]=analogRead(A2); //Connected to a LDR
-    
+    tab_reg[4]=digitalRead(8);
+    tab_reg[5]=digitalRead(9);
     
     digitalWrite(4,tab_reg[6]);
     digitalWrite(5,tab_reg[7]);
@@ -36,8 +38,7 @@ void loop() {
     digitalWrite(7,tab_reg[9]);
     
     
-    tab_reg[4]=digitalRead(8);
-    tab_reg[5]=digitalRead(9);
+    
     /* Launch Modbus slave loop with:
        - pointer to the mapping
        - max values of mapping */

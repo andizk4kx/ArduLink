@@ -1,5 +1,5 @@
 include tinclasses.ew
-include eumodbus.e
+include eumodbus.e as modbus
 
 forward procedure showsetup()
 forward procedure icons8()
@@ -10,10 +10,11 @@ forward procedure get_dataregister()
 forward procedure getports()
 forward procedure display_values ()
 forward procedure goodbye()
+forward procedure toggle_led()
 
 atom ACTIVE = False
 atom ctx = 0
-
+enum red=7,green=8,blue=9,yellow=10
 atom pollintervall=200
 atom updateintervall=500
 atom BitRate=9600
@@ -21,23 +22,30 @@ atom ErrCount=0
 atom MaxErrCount=5
 atom ErrCountSum=0
 atom TotalCount=0
-object comports={"COM1:","COM2:","COM3:","COM4:","COM5","COM6:","COM7:","COM8:"}
+object comports={}
 atom bullshit=#DEADBEEF
+object modregs={1,2,3,4,5,6,7,8,9,0}
 
-object modregs=repeat(0,10)
 
 -- load resources
+UseTransparentPics=True
 atom connected=LoadIco("usb-connected.ico")
 atom disconnected=LoadIco("usb-not-connected.ico")
 atom font_lucida12 = NewFont("Lucida Sans", 12, False,False,False)
 atom font_lucida10 = NewFont("Lucida Sans", 10, False,False,False)
 atom font_fn_default=FN_DEFAULT
 FN_DEFAULT=font_lucida12
+atom ledoff=LoadPic("icon_off.ico")
+atom ledblue=LoadPic("icon_blue.ico")
+atom ledred=LoadPic("icon_red.ico")
+atom ledgreen=LoadPic("icon_green.ico")
+atom ledyellow=LoadPic("icon_yellow.ico")
+
 --{}=create_thread(getports)
 -- create the App with the main Window
 Tapp myApp=new({"ArduLink "})
 myApp.width=900
-myApp.height=300
+myApp.height=320
 myApp.xpos=ScreenWidth()/2 -450
 myApp.ypos=ScreenHeight()/2 -150
 myApp.exitrid=goodbye
@@ -59,7 +67,7 @@ Tstatusbar status= new()
 
 myApp.parent()
 
-Tbutton linkicons8=new({"All Icons are from https://Iconduck.com"})
+Tbutton linkicons8=new({"Google ModBus ;-)"})
 linkicons8.width=96
 linkicons8.height=96
 linkicons8.xpos=780
@@ -71,6 +79,82 @@ verbindung.height=128
 verbindung.iconhandle=disconnected
 verbindung.show()
 verbindung.eventhandler(Click,showsetup)
+
+Tbutton red_led=new()
+red_led.xpos=160
+red_led.ypos=10
+red_led.caption="Led ON"
+red_led.eventhandler(Click,toggle_led)
+
+Tbutton green_led=new()
+green_led.xpos=160
+green_led.ypos=74
+green_led.caption="Led ON"
+green_led.eventhandler(Click,toggle_led)
+
+Tbutton blue_led=new()
+blue_led.xpos=160
+blue_led.ypos=138
+blue_led.eventhandler(Click,toggle_led)
+blue_led.caption="Led ON"
+
+Tbutton yellow_led=new()
+yellow_led.xpos=160
+yellow_led.ypos=202
+yellow_led.caption="Led ON"
+yellow_led.eventhandler(Click,toggle_led)
+
+Tbutton xred_led=new()
+xred_led.xpos=320
+xred_led.ypos=10
+xred_led.caption="Led OFF"
+xred_led.eventhandler(Click,toggle_led)
+
+Tbutton xgreen_led=new()
+xgreen_led.xpos=320
+xgreen_led.ypos=74
+xgreen_led.caption="Led OFF"
+xgreen_led.eventhandler(Click,toggle_led)
+
+Tbutton xblue_led=new()
+xblue_led.xpos=320
+xblue_led.ypos=138
+xblue_led.caption="Led OFF"
+xblue_led.eventhandler(Click,toggle_led)
+
+Tbutton xyellow_led=new()
+xyellow_led.xpos=320
+xyellow_led.ypos=202
+xyellow_led.caption="Led OFF"
+xyellow_led.eventhandler(Click,toggle_led)
+
+Tpicture  redled =new()
+redled.xpos=250
+redled.ypos=10
+redled.height=64
+redled.width=64
+redled.picturehandle=ledred
+
+Tpicture  greenled =new()
+greenled.xpos=250
+greenled.ypos=74
+greenled.height=64
+greenled.width=64
+greenled.picturehandle=ledgreen
+
+Tpicture  blueled =new()
+blueled.xpos=250
+blueled.ypos=138
+blueled.height=64
+blueled.width=64
+blueled.picturehandle=ledblue
+
+Tpicture  yellowled =new()
+yellowled.xpos=250
+yellowled.ypos=202
+yellowled.height=64
+yellowled.width=64
+yellowled.picturehandle=ledyellow
 
 mydialog.parent()
 Tgroup group_rtu =new({"RTU Parameter"})
@@ -149,7 +233,7 @@ procedure icons8()
 object erg
     --erg=FindExe("x.html")
     erg=GetAssocExe(".html")
-    RunApp(erg," https://Iconduck.com")
+    RunApp(erg," https://google.com/search?q=all+about+modbus")
 end procedure
 
 procedure setslave()
@@ -158,7 +242,7 @@ end procedure
 
 --##########################################################################################
 procedure start_connect()
-object id,erg
+object id,erg,rect
 if ACTIVE  then
     Void= modbus:Flush(ctx)
      modbus:Close(ctx)
@@ -192,6 +276,9 @@ else
           verbindung.iconhandle=connected
           status.caption=("Verbunden "&list_com.item()&" Slave :"&(edit_slaves.text))
           ACTIVE=True
+          rect=GetWindowRect(mydialog.handle)
+-- move the dialog Window out of view
+          mydialog.ypos=rect[2]-220  
           PollTimer.run()
           DisplayTimer.run()
           get_dataregister()
@@ -249,10 +336,38 @@ end procedure
 
 --##########################################################################################
 procedure display_values ()
-
+if not sequence(modregs) then
+modregs={1,2,3,4,5,6,7,8,9,0}
+end if
 --SetText(label_error,sprintf("%d",ErrCountSum)&"/"&sprintf("%d",TotalCount))
 transfer.caption="Fehlerhaft :"&sprintf("%d",ErrCountSum)&"  Total :"&sprintf("%d",TotalCount)
-?modregs
+--  if sequence(modregs) then
+--      for i=1 to length(modregs) do
+--          printf(1,"%d ",modregs[i])
+--      end for
+--  end if
+--  puts(1,"\n")
+if modregs[red] then
+    redled.picturehandle=ledred
+else
+    redled.picturehandle=ledoff 
+end if
+if modregs[green] then
+    greenled.picturehandle=ledgreen
+else
+    greenled.picturehandle=ledoff 
+end if
+if modregs[blue] then
+    blueled.picturehandle=ledblue
+else
+    blueled.picturehandle=ledoff 
+end if
+if modregs[yellow] then
+    yellowled.picturehandle=ledyellow
+else
+    yellowled.picturehandle=ledoff 
+end if
+    
 end procedure
 
 procedure goodbye()
@@ -261,10 +376,54 @@ procedure goodbye()
     end if
 end procedure
 
+procedure toggle_led()
+PollTimer.stop()
+
+if EventOwner=red_led.handle then
+    modregs[red]=True
+end if
+if EventOwner=green_led.handle then
+    modregs[green]=True
+end if
+
+if EventOwner=blue_led.handle then
+    modregs[blue]=True
+end if
+
+if EventOwner=yellow_led.handle then
+    modregs[yellow]=True
+end if
+
+if EventOwner=xred_led.handle then
+    modregs[red]=False
+end if
+
+if EventOwner=xgreen_led.handle then
+    modregs[green]=False
+end if
+
+if EventOwner=xblue_led.handle then
+    modregs[blue]=False
+end if
+
+if EventOwner=xyellow_led.handle then
+    modregs[yellow]=False
+end if
+Void=Write_Registers(ctx,red-1,modregs[red..yellow],4)
+if ACTIVE then
+PollTimer.run()
+end if
+end procedure
+
+
+
 procedure getports()
 status.caption="Suche Com Ports"
 list_com.clear()
 comports=Scan_Com_Ports()
+if not(length(comports)) then
+--  comports={"COM1:","COM3:"}
+end if
 list_com.add(comports)
 status.caption="Suche Com Ports beendet"
 --exit_thread(1)

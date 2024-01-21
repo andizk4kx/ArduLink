@@ -1,0 +1,101 @@
+--BOOL WINAPI FreeConsole(void);
+--BOOL WINAPI AllocConsole(void);
+--HWND WINAPI GetConsoleWindow(void);
+--DWORD WINAPI GetConsoleTitle(
+--  _Out_  LPTSTR lpConsoleTitle,
+--  _In_     DWORD nSize
+--);
+--BOOL WINAPI SetConsoleTitle(
+--  _In_    LPCTSTR lpConsoleTitle
+--);
+--DWORD WINAPI GetConsoleOriginalTitle(
+--  _Out_  LPTSTR lpConsoleTitle,
+--  _In_     DWORD nSize
+--);
+--HANDLE WINAPI GetStdHandle(
+--  _In_    DWORD nStdHandle
+--);
+--BOOL WINAPI SetConsoleTextAttribute(
+--  _In_    HANDLE hConsoleOutput,
+--  _In_    WORD wAttributes
+--);
+
+constant FOREGROUND_BLUE =          0x0001
+
+constant FOREGROUND_GREEN =         0x0002
+
+constant FOREGROUND_RED =           0x0004
+
+constant FOREGROUND_INTENSITY =     0x0008
+
+constant BACKGROUND_BLUE =          0x0010
+
+constant BACKGROUND_GREEN =         0x0020
+
+constant BACKGROUND_RED =           0x0040
+
+constant BACKGROUND_INTENSITY =     0x0080
+
+global constant STD_INPUT_HANDLE = -10
+global constant STD_OUTPUT_HANDLE= -11
+global constant STD_ERROR_HANDLE = -12
+
+atom kernel32=open_dll("kernel32.dll") 
+if kernel32<0  then 
+        puts(1,"kernel32.dll not found!\n") 
+atom x = getc(0)
+        abort(1) 
+end if 
+
+atom xSetConsoleTitle=define_c_func(kernel32,"SetConsoleTitleA",{C_POINTER},C_INT)
+atom xFreeConsole=define_c_func(kernel32,"FreeConsole",{},C_INT) 
+atom xAllocConsole=define_c_func(kernel32,"AllocConsole",{},C_INT) 
+atom xGetConsoleWindow=define_c_func(kernel32,"GetConsoleWindow",{},C_INT)
+atom xGetConsoleTitle=define_c_proc(kernel32,"GetConsoleTitleA",{C_POINTER,C_INT})
+atom xAttachConsole=define_c_func(kernel32,"AttachConsole",{C_INT},C_INT) 
+atom xGetStdHandle=define_c_func(kernel32,"GetStdHandle",{C_DWORD},C_POINTER)
+atom xSetConsoleTextAttribute=define_c_func(kernel32,"SetConsoleTextAttribute",{C_POINTER,C_INT},C_INT)
+atom xGetCurrentProcessId=define_c_func(kernel32,"GetCurrentProcessId",{},C_INT)
+
+global procedure AttachConsole(integer p)
+    Void=c_func(xAttachConsole,{p})
+end procedure
+
+global function pid()
+return c_func(xGetCurrentProcessId,{})
+end function
+
+global function GetStdHandle(integer handle=STD_OUTPUT_HANDLE)
+return c_func(xGetStdHandle,{handle})
+end function
+
+global procedure SetConsoleTextAttribute(integer col )
+Void=c_func(xSetConsoleTextAttribute,{GetStdHandle(),col})
+end procedure
+
+global function SetConsoleTitle(sequence title)
+    atom sztext=allocate_string(title)
+    atom result = c_func(xSetConsoleTitle,{sztext})
+    free(sztext)
+    return result    
+end function
+
+global function GetConsoleTitle()
+object retval=""
+atom buffer=allocate(256)
+    c_proc(xGetConsoleTitle,{buffer,256})
+    retval=peek_string((buffer))
+return retval
+end function
+
+global procedure FreeConsole()
+    Void = c_func(xFreeConsole,{})
+end procedure
+
+global function GetConsoleWindow()
+    return c_func(xGetConsoleWindow,{})
+end function
+
+global procedure AllocConsole()
+    Void=c_func(xAllocConsole,{})
+end procedure

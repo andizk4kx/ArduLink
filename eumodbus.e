@@ -198,7 +198,7 @@ public function Write_Registers(atom ctx,atom addr,sequence value,atom reg_count
 atom result
 atom buffer=allocate(2*reg_count)
     poke2(buffer,value)
-    result=c_func(modbus_write_registers,{ctx,addr,1,buffer})
+    result=c_func(modbus_write_registers,{ctx,addr,reg_count,buffer})
 return result    
 end function
 
@@ -234,14 +234,17 @@ end function
 
 public function Read_Registers16u(atom ctx, atom addr,atom reg_count=1)
 atom buffer=allocate(reg_count*2)
-object result=-1
-result = c_func(modbus_read_registers,{ctx,addr,reg_count,buffer})
-if result>0 then
-    result=peek2u({buffer,reg_count}) 
+object result
+atom erg=-1
+
+erg = c_func(modbus_read_registers,{ctx,addr,reg_count,buffer})
+if erg>0 then
+    result=peek2u({buffer,erg}) 
    else
     result="Error"
 end if
 free(buffer)
+
 return result
 end function
 

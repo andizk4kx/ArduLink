@@ -14,7 +14,11 @@ forward procedure toggle_led()
 
 atom ACTIVE = False
 atom ctx = 0
+
 enum red=7,green=8,blue=9,yellow=10
+enum poti=3,ldr=4
+enum butt1=5,butt2=6
+
 atom pollintervall=200
 atom updateintervall=500
 atom BitRate=9600
@@ -40,6 +44,8 @@ atom ledblue=LoadPic("icon_blue.ico")
 atom ledred=LoadPic("icon_red.ico")
 atom ledgreen=LoadPic("icon_green.ico")
 atom ledyellow=LoadPic("icon_yellow.ico")
+atom button_on=LoadPic("button_on.ico")
+atom button_off=LoadPic("button_off.ico")
 
 --{}=create_thread(getports)
 -- create the App with the main Window
@@ -53,7 +59,6 @@ myApp.exitrid=goodbye
 -- create the setup dialog
 Tdialog mydialog=new({"Modbus einstellungen"})
 mydialog.icon="slider.ico"
-mydialog.hide()
 mydialog.width=500
 mydialog.height=130
 mydialog.xpos=ScreenWidth()/2 -250
@@ -80,81 +85,153 @@ verbindung.iconhandle=disconnected
 verbindung.show()
 verbindung.eventhandler(Click,showsetup)
 
-Tbutton red_led=new()
-red_led.xpos=160
-red_led.ypos=10
+Tgroup group_led =new({"LED's"})
+group_led.parent()
+group_led.xpos=150
+group_led.ypos=0
+group_led.width=480-220
+group_led.height=265
+
+
+Tbutton red_led=new({"Led ON"})
+red_led.xpos=160-150
+red_led.ypos=10+10
 red_led.caption="Led ON"
 red_led.eventhandler(Click,toggle_led)
 
 Tbutton green_led=new()
-green_led.xpos=160
-green_led.ypos=74
+green_led.xpos=160-150
+green_led.ypos=74+10
 green_led.caption="Led ON"
 green_led.eventhandler(Click,toggle_led)
 
 Tbutton blue_led=new()
-blue_led.xpos=160
-blue_led.ypos=138
+blue_led.xpos=160-150
+blue_led.ypos=138+10
 blue_led.eventhandler(Click,toggle_led)
 blue_led.caption="Led ON"
 
 Tbutton yellow_led=new()
-yellow_led.xpos=160
-yellow_led.ypos=202
+yellow_led.xpos=160-150
+yellow_led.ypos=202+10
 yellow_led.caption="Led ON"
 yellow_led.eventhandler(Click,toggle_led)
 
 Tbutton xred_led=new()
-xred_led.xpos=320
-xred_led.ypos=10
+xred_led.xpos=320-150
+xred_led.ypos=10+10
 xred_led.caption="Led OFF"
 xred_led.eventhandler(Click,toggle_led)
 
 Tbutton xgreen_led=new()
-xgreen_led.xpos=320
-xgreen_led.ypos=74
+xgreen_led.xpos=320-150
+xgreen_led.ypos=74+10
 xgreen_led.caption="Led OFF"
 xgreen_led.eventhandler(Click,toggle_led)
 
 Tbutton xblue_led=new()
-xblue_led.xpos=320
-xblue_led.ypos=138
+xblue_led.xpos=320-150
+xblue_led.ypos=138+10
 xblue_led.caption="Led OFF"
 xblue_led.eventhandler(Click,toggle_led)
 
 Tbutton xyellow_led=new()
-xyellow_led.xpos=320
-xyellow_led.ypos=202
+xyellow_led.xpos=320-150
+xyellow_led.ypos=202+10
 xyellow_led.caption="Led OFF"
 xyellow_led.eventhandler(Click,toggle_led)
 
 Tpicture  redled =new()
-redled.xpos=250
+redled.xpos=250-150
 redled.ypos=10
 redled.height=64
 redled.width=64
 redled.picturehandle=ledred
 
 Tpicture  greenled =new()
-greenled.xpos=250
+greenled.xpos=250-150
 greenled.ypos=74
 greenled.height=64
 greenled.width=64
 greenled.picturehandle=ledgreen
 
 Tpicture  blueled =new()
-blueled.xpos=250
+blueled.xpos=250-150
 blueled.ypos=138
 blueled.height=64
 blueled.width=64
 blueled.picturehandle=ledblue
 
 Tpicture  yellowled =new()
-yellowled.xpos=250
+yellowled.xpos=250-150
 yellowled.ypos=202
 yellowled.height=64
 yellowled.width=64
 yellowled.picturehandle=ledyellow
+
+myApp.parent()
+myApp.update()
+group_led.update()
+
+Tgroup group_analog =new({"Analog"})
+group_analog.parent()
+group_analog.xpos=160+260
+group_analog.ypos=0
+group_analog.width=480-140
+group_analog.height=130
+
+Tslider slider_pot=new({"Potentiometer"})
+slider_pot.ypos=25
+slider_pot.width=330
+slider_pot.height=40
+slider_pot.min=0
+slider_pot.max=1023
+slider_pot.freq=100
+
+Tlabel  pot_label=new({"Potentiometer"})
+pot_label.xpos=130
+pot_label.ypos=10
+pot_label.width=100
+
+
+Tslider slider_ldr=new({"Fotowiderstand"})
+slider_ldr.ypos=85
+slider_ldr.width=330
+slider_ldr.height=40
+slider_ldr.min=0
+slider_ldr.max=1023
+slider_ldr.freq=100
+
+Tlabel  ldr_label=new({"Fotowiderstand"})
+ldr_label.xpos=130
+ldr_label.ypos=70
+ldr_label.width=100
+
+group_analog.update()
+myApp.parent()
+
+Tgroup group_button =new({"Buttons"})
+group_button.parent()
+group_button.xpos=160+260
+group_button.ypos=130
+group_button.width=480-140
+group_button.height=135
+
+Tpicture button1 = new()
+button1.xpos=10
+button1.ypos=50
+button1.height=64
+button1.width=148
+button1.picturehandle=button_off
+
+Tpicture button2 = new()
+button2.xpos=180
+button2.ypos=50
+button2.height=64
+button2.width=148
+button2.picturehandle=button_off
+
+group_button.update()
 
 mydialog.parent()
 Tgroup group_rtu =new({"RTU Parameter"})
@@ -227,13 +304,15 @@ myApp.run()
 -- eventhandler procs
 procedure showsetup()
     mydialog.show()
+    mydialog.update()
+--  group_led.show()
 end procedure
 
 procedure icons8()
 object erg
     --erg=FindExe("x.html")
     erg=GetAssocExe(".html")
-    RunApp(erg," https://google.com/search?q=all+about+modbus")
+    RunApp(erg," https://google.com/search?q=all+about+arduino+modbus")
 end procedure
 
 procedure setslave()
@@ -242,7 +321,7 @@ end procedure
 
 --##########################################################################################
 procedure start_connect()
-object id,erg,rect
+object id,erg
 if ACTIVE  then
     Void= modbus:Flush(ctx)
      modbus:Close(ctx)
@@ -276,9 +355,7 @@ else
           verbindung.iconhandle=connected
           status.caption=("Verbunden "&list_com.item()&" Slave :"&(edit_slaves.text))
           ACTIVE=True
-          rect=GetWindowRect(mydialog.handle)
--- move the dialog Window out of view
-          mydialog.ypos=rect[2]-220  
+          ErrCount=0
           PollTimer.run()
           DisplayTimer.run()
           get_dataregister()
@@ -367,7 +444,19 @@ if modregs[yellow] then
 else
     yellowled.picturehandle=ledoff 
 end if
-    
+slider_pot.pos=modregs[poti]
+slider_ldr.pos=modregs[ldr]
+
+if modregs[butt1] then
+    button1.picturehandle=button_on
+    else
+    button1.picturehandle=button_off    
+end if
+if modregs[butt2] then
+    button2.picturehandle=button_on
+    else
+    button2.picturehandle=button_off    
+end if
 end procedure
 
 procedure goodbye()

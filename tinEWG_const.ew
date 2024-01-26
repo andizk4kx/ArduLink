@@ -185,6 +185,7 @@ global constant    TBS_HORZ            = 0,
     TBS_ENABLESELRANGE  = #20,
     TBS_FIXEDLENGTH     = #40,
     TBS_NOTHUMB         = #80,
+    TBS_TOOLTIPS        = #100,
     -- notifications
     TB_BOTTOM           = 7,
     TB_ENDTRACK         = 8,
@@ -2311,7 +2312,8 @@ global constant DT_SINGLELINE = #0020,
          DT_CENTER     = #0001,
          DT_VCENTER    = #0004
 
-
+global constant SLIDER_STYLE=or_all({WS_VISIBLE,WS_CHILD,TBS_ENABLESELRANGE,TBS_HORZ,TBS_AUTOTICKS,TBS_BOTH,TBS_TOOLTIPS})
+global constant SLIDER_CLASS={TRACKBAR_CLASS,SLIDER_STYLE}
 
       
 -- global constant IDC_ARROW = 32512,

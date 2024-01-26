@@ -750,7 +750,7 @@ atom Calendar = 32,
 IpEdit = 33
 public atom RichEdit = 34
 
-atom Fake = 49,
+global atom Fake = 49,
 UserDefControl = 50,
 MainWin =51
 
@@ -1588,7 +1588,18 @@ HBRUSH CreateSolidBrush(
     
     myDeleteObject = link_c_func(gdi32,"DeleteObject",{C_INT},C_INT)
     myGetSysColorBrush = link_c_func(user32,"GetSysColorBrush",{C_INT},C_POINTER)
-    myInvalidateRect =link_c_func(user32,"InvalidateRect",{C_INT,C_INT,C_INT},C_INT)
+--  myInvalidateRect =link_c_func(user32,"InvalidateRect",{C_INT,C_INT,C_INT},C_INT)
+tStr ="""
+
+BOOL InvalidateRect(
+  _In_  HWND hWnd,
+  _In_  const RECT *lpRect,
+  _In_  BOOL bErase
+);             
+"""
+    set_unicode(0)
+    myInvalidateRect=define_cffi_func(user32,tStr)
+
     myRedrawWindow = link_c_func(user32,"RedrawWindow",{C_HANDLE,C_POINTER,C_HANDLE,C_UINT},C_INT)
     mySelectObject = link_c_func(gdi32,"SelectObject",{C_POINTER,C_POINTER},C_POINTER)
     myCreateCompatibleDC=link_c_func(gdi32,"CreateCompatibleDC",{C_POINTER},C_POINTER)
@@ -2556,7 +2567,10 @@ public procedure RedrawWindow (atom handle)
 --  __in    HRGN hrgnUpdate,
 --  __in    UINT flags
 -- );
+    Void=c_func (myInvalidateRect,{handle,Null,True})
     Void=c_func(myRedrawWindow,{handle,Null,Null,or_all({RDW_UPDATENOW,RDW_ALLCHILDREN,RDW_INVALIDATE,RDW_ERASE,RDW_FRAME,RDW_INTERNALPAINT})}) 
+    Void=c_func (myUpdateWindow, {handle})
+
 end procedure
 
 public function AnimateWindow (atom handle,atom time1,atom ShowFlags)

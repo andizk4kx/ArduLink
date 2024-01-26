@@ -2,6 +2,8 @@ A collection of links to the pages relevant for me to create this program.
 
 http://phix.x10.mx/
 
+https://qmodbus.sourceforge.net/
+
 https://github.com/stephane/modbusino
 
 https://github.com/stephane/libmodbus
@@ -11,3 +13,7 @@ https://github.com/stephane/libmodbus/wiki
 https://github.com/stephane/libmodbus/wiki/Compile-dll-under-Windows-with-Visual-Studio-2008-Express
 
 https://libmodbus.org/
+
+https://libmodbus.org/reference/
+
+https://iconduck.com/

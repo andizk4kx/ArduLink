@@ -15,10 +15,10 @@ global class Twindow nullable
     public sequence exit_text="Sind sie sicher?"
     atom xpos=-1
     atom ypos=-1
-    atom width=200
-    atom height=400
+    atom width=2
+    atom height=2
     sequence caption
-    
+    --200x400
     procedure parent()
         SetParentWindow(this.handle)
     end procedure
@@ -58,6 +58,10 @@ global class Twindow nullable
     procedure set_height(integer y)
     this.height=y
     SetDim(this.handle,this.width,this.height)
+    end procedure
+
+    procedure update()
+        RedrawWindow(this.handle)
     end procedure
     
     procedure bye()
@@ -107,7 +111,6 @@ global class Tdialog extends Twindow
         SetIcon(this.icon)
         SetParentWindow(p)
     end procedure
-    
     procedure ~Tdialog()
         CloseApp()
     end procedure
@@ -124,6 +127,7 @@ global class Tapp
     atom opac=100
     sequence icon="default.ico"
     atom exitrid
+public  atom handle
 
     procedure parent()
         SetParentWindow(Appwin.handle)
@@ -178,10 +182,19 @@ global class Tapp
         SetIcon(this.icon)
         Appwin.caption=title
         Appwin.show()
+        this.handle=Appwin.handle
         --SetOpacity(Appwin.handle,this.opac)
         return this
     end function
-
+    procedure show()
+        Appwin.show()   
+    end procedure
+    procedure hide()
+        Appwin.hide()
+    end procedure
+    procedure update()
+        Appwin.update()
+    end procedure       
     procedure run()
         WinMain()
     end procedure
@@ -258,6 +271,10 @@ class Tcontrol
     this.height=y
     SetDim(this.handle,this.width,this.height)
     end procedure       
+
+    procedure update()
+        RedrawWindow(this.handle)
+    end procedure
 end class
 
 global class Tbutton extends Tcontrol
@@ -372,6 +389,33 @@ global class Tdropdown extends Tlist
     -- Pos und size funktionen anpassen siehe GetComboBoxInfo Zeile 2525 tinlib
 end class
 
+global class Tslider extends Tcontrol
+    atom min
+    atom max
+    atom pos
+    atom freq
+    function Tslider(sequence title="",integer controltype=UserDefControl)
+        this.Type=controltype
+        this.handle=Control(SLIDER_CLASS,title,this.xpos,this.ypos,this.width,this.height)
+        return this
+    end function
+    procedure set_min(integer mi=0)
+        this.min=mi
+        Void= SendMessage(this.handle,TBM_SETRANGEMIN,1,mi)
+    end procedure
+    procedure set_max(integer ma=1000)
+        this.max=max
+        Void= SendMessage(this.handle,TBM_SETRANGEMAX,1,ma)
+    end procedure
+    procedure set_pos(integer po=500)
+        this.pos=pos
+        Void= SendMessage(this.handle,TBM_SETPOS,1,po)
+    end procedure
+    procedure set_freq(integer fr=10)
+        Void= SendMessage(this.handle,TBM_SETTICFREQ,fr,0)
+    end procedure
+-- Das erste Kontrollelement das nicht in tinewg verankert ist
+end class
 
 
 

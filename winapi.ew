@@ -30,7 +30,7 @@ typedef struct _RECT {
            
 """
 global constant integer idRECT=define_struct(tRECT)
-
+global constant  pRECT=allocate_struct(idRECT)
 constant tPOINT="""
 
 typedef struct tagPOINT {

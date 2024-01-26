@@ -1,2 +1,2 @@
 "# ArduLink" 
-Kleines Programm um mit einem Arduino via Modbus zu kommunizieren
+Kleines Programm das mit einem Arduino via Modbus  kommuniziert.

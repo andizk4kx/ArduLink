@@ -1,5 +1,6 @@
 include tinclasses.ew
 include eumodbus.e as modbus
+include translate.e
 
 forward procedure showsetup()
 forward procedure icons8()
@@ -55,9 +56,11 @@ myApp.height=320
 myApp.xpos=ScreenWidth()/2 -450
 myApp.ypos=ScreenHeight()/2 -150
 myApp.exitrid=goodbye
+myApp.exit_title=xlt("Beenden")
+myApp.exit_text=xlt("Sind sie sicher?")
 
 -- create the setup dialog
-Tdialog mydialog=new({"Modbus einstellungen"})
+Tdialog mydialog=new({xlt("Modbus einstellungen")})
 mydialog.icon="slider.ico"
 mydialog.width=500
 mydialog.height=130
@@ -93,52 +96,52 @@ group_led.width=480-220
 group_led.height=265
 
 
-Tbutton red_led=new({"Led ON"})
+Tbutton red_led=new({xlt("Led An")})
 red_led.xpos=160-150
 red_led.ypos=10+10
-red_led.caption="Led ON"
+red_led.caption=xlt("Led An")
 red_led.eventhandler(Click,toggle_led)
 
 Tbutton green_led=new()
 green_led.xpos=160-150
 green_led.ypos=74+10
-green_led.caption="Led ON"
+green_led.caption=xlt("Led An")
 green_led.eventhandler(Click,toggle_led)
 
 Tbutton blue_led=new()
 blue_led.xpos=160-150
 blue_led.ypos=138+10
 blue_led.eventhandler(Click,toggle_led)
-blue_led.caption="Led ON"
+blue_led.caption=xlt("Led An")
 
 Tbutton yellow_led=new()
 yellow_led.xpos=160-150
 yellow_led.ypos=202+10
-yellow_led.caption="Led ON"
+yellow_led.caption=xlt("Led An")
 yellow_led.eventhandler(Click,toggle_led)
 
 Tbutton xred_led=new()
 xred_led.xpos=320-150
 xred_led.ypos=10+10
-xred_led.caption="Led OFF"
+xred_led.caption=xlt("Led Aus")
 xred_led.eventhandler(Click,toggle_led)
 
 Tbutton xgreen_led=new()
 xgreen_led.xpos=320-150
 xgreen_led.ypos=74+10
-xgreen_led.caption="Led OFF"
+xgreen_led.caption=xlt("Led Aus")
 xgreen_led.eventhandler(Click,toggle_led)
 
 Tbutton xblue_led=new()
 xblue_led.xpos=320-150
 xblue_led.ypos=138+10
-xblue_led.caption="Led OFF"
+xblue_led.caption=xlt("Led Aus")
 xblue_led.eventhandler(Click,toggle_led)
 
 Tbutton xyellow_led=new()
 xyellow_led.xpos=320-150
 xyellow_led.ypos=202+10
-xyellow_led.caption="Led OFF"
+xyellow_led.caption=xlt("Led Aus")
 xyellow_led.eventhandler(Click,toggle_led)
 
 Tpicture  redled =new()
@@ -180,7 +183,7 @@ group_analog.ypos=0
 group_analog.width=480-140
 group_analog.height=130
 
-Tslider slider_pot=new({"Potentiometer"})
+Tslider slider_pot=new({xlt("Potentiometer")})
 slider_pot.ypos=25
 slider_pot.width=330
 slider_pot.height=40
@@ -188,13 +191,13 @@ slider_pot.min=0
 slider_pot.max=1023
 slider_pot.freq=100
 
-Tlabel  pot_label=new({"Potentiometer"})
+Tlabel  pot_label=new({xlt("Potentiometer")})
 pot_label.xpos=130
 pot_label.ypos=10
 pot_label.width=100
 
 
-Tslider slider_ldr=new({"Fotowiderstand"})
+Tslider slider_ldr=new({xlt("Fotowiderstand")})
 slider_ldr.ypos=85
 slider_ldr.width=330
 slider_ldr.height=40
@@ -202,7 +205,7 @@ slider_ldr.min=0
 slider_ldr.max=1023
 slider_ldr.freq=100
 
-Tlabel  ldr_label=new({"Fotowiderstand"})
+Tlabel  ldr_label=new({xlt("Fotowiderstand")})
 ldr_label.xpos=130
 ldr_label.ypos=70
 ldr_label.width=100
@@ -210,7 +213,7 @@ ldr_label.width=100
 group_analog.update()
 myApp.parent()
 
-Tgroup group_button =new({"Buttons"})
+Tgroup group_button =new({xlt("Buttons")})
 group_button.parent()
 group_button.xpos=160+260
 group_button.ypos=130
@@ -276,7 +279,7 @@ button_slaves.width=82
 button_slaves.height=25
 button_slaves.eventhandler(Click,setslave)
 
-Tbutton button_connect=new({"Verbinden"})
+Tbutton button_connect=new({xlt("Verbinden")})
 button_connect.xpos=193
 button_connect.ypos=15
 button_connect.width=82
@@ -289,7 +292,7 @@ edit_slaves.ypos=40
 edit_slaves.width=30
 edit_slaves.height=22
 
-Tlabel transfer = new({"Fehler:"})
+Tlabel transfer = new({xlt("Fehler:")})
 transfer.xpos=280
 transfer.width=180
 Ttimer PollTimer =new()
@@ -327,9 +330,9 @@ if ACTIVE  then
      modbus:Close(ctx)
      modbus:Free(ctx)
      --SetWinTimer(0,1)
-     button_connect.caption="Verbinden"
+     button_connect.caption=xlt("Verbinden")
      verbindung.iconhandle=disconnected
-     status.caption="getrennt"
+     status.caption=xlt("getrennt")
      ctx=0
      ACTIVE=False
 --  tin:SetCheck(button_connect,False)
@@ -339,7 +342,7 @@ else
      --id=value(GetText(edit_slaves))
      id=get_integer(edit_slaves.handle)
      if equal(id,bullshit) then
-        InfoMsg("\""&edit_slaves.text&"\""&" ist keine gültige Slave Id","Bullshit")
+        InfoMsg("\""&edit_slaves.text&"\""&xlt(" ist keine gültige Slave Id"),"Bullshit")
         edit_slaves.text="1"
         return     
      end if
@@ -351,9 +354,9 @@ else
          Void= modbus:Set_Slave(ctx,id)
           --modbus:Set_Timeout(ctx,0,1000)
           --SetWinTimer(polltime,1)
-          button_connect.caption="Trennen"
+          button_connect.caption=xlt("Trennen")
           verbindung.iconhandle=connected
-          status.caption=("Verbunden "&list_com.item()&" Slave :"&(edit_slaves.text))
+          status.caption=(xlt("Verbunden ")&list_com.item()&" Slave :"&(edit_slaves.text))
           ACTIVE=True
           ErrCount=0
           PollTimer.run()
@@ -363,7 +366,7 @@ else
           ErrCountSum=0
           TotalCount=0
      else
-       status.caption=("Verbindung fehlgeschlagen"&list_com.item()) 
+       status.caption=(xlt("Verbindung fehlgeschlagen")&list_com.item()) 
      end if
 end if
 end procedure
@@ -393,7 +396,7 @@ object data=repeat(0,10)
                 --?ErrCountSum
                 if ErrCount>MaxErrCount then
                         start_connect()
-                        if AskMsg("Verbindungsabbruch.\n Neu verbinden?","Verbindungsfehler"&" "&sprintf("%d",ErrCountSum)) then
+                        if AskMsg(xlt("Verbindungsabbruch.\n Neu verbinden?"),xlt("Verbindungsfehler")&" "&sprintf("%d",ErrCountSum)) then
                                 start_connect()
                         else
                                 -- do nothing
@@ -417,7 +420,7 @@ if not sequence(modregs) then
 modregs={1,2,3,4,5,6,7,8,9,0}
 end if
 --SetText(label_error,sprintf("%d",ErrCountSum)&"/"&sprintf("%d",TotalCount))
-transfer.caption="Fehlerhaft :"&sprintf("%d",ErrCountSum)&"  Total :"&sprintf("%d",TotalCount)
+transfer.caption=xlt("Fehlerhaft :")&sprintf("%d",ErrCountSum)&xlt(" Gesamt :")&sprintf("%d",TotalCount)
 --  if sequence(modregs) then
 --      for i=1 to length(modregs) do
 --          printf(1,"%d ",modregs[i])
@@ -507,13 +510,13 @@ end procedure
 
 
 procedure getports()
-status.caption="Suche Com Ports"
+status.caption=xlt("Suche Com Ports")
 list_com.clear()
 comports=Scan_Com_Ports()
 if not(length(comports)) then
 --  comports={"COM1:","COM3:"}
 end if
 list_com.add(comports)
-status.caption="Suche Com Ports beendet"
+status.caption=xlt("Suche Com Ports beendet")
 --exit_thread(1)
 end procedure

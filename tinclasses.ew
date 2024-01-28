@@ -117,7 +117,7 @@ global class Tdialog extends Twindow
 end class
 
 global class Tapp
-    sequence exit_title="Beenden"
+    sequence exit_title="den"
     sequence exit_text="Sind sie sicher?"
     atom xpos=-1
     atom ypos=-1
@@ -194,6 +194,12 @@ public  atom handle
     end procedure
     procedure update()
         Appwin.update()
+    end procedure
+    procedure set_exit_title(sequence title)
+    Appwin.exit_title=title
+    end procedure
+    procedure set_exit_text(sequence text)
+    Appwin.exit_text=text
     end procedure       
     procedure run()
         WinMain()

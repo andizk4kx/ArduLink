@@ -2,6 +2,8 @@ include tinclasses.ew
 include eumodbus.e as modbus
 include translate.e
 
+object modregs={1,2,3,4,5,6,7,8,9,0}
+
 forward procedure showsetup()
 forward procedure icons8()
 forward procedure setslave()
@@ -29,7 +31,7 @@ atom ErrCountSum=0
 atom TotalCount=0
 object comports={}
 atom bullshit=#DEADBEEF
-object modregs={1,2,3,4,5,6,7,8,9,0}
+--object modregs={1,2,3,4,5,6,7,8,9,0}
 
 
 -- load resources
@@ -409,8 +411,9 @@ object data=repeat(0,10)
                 
                 ErrCount=0
         end if
-        
-        modregs=data
+        if not atom(data) then
+            modregs=data
+        end if
 
 end procedure
 
@@ -427,6 +430,7 @@ transfer.caption=xlt("Fehlerhaft :")&sprintf("%d",ErrCountSum)&xlt(" Gesamt :")&
 --      end for
 --  end if
 --  puts(1,"\n")
+
 if modregs[red] then
     redled.picturehandle=ledred
 else
@@ -460,6 +464,7 @@ if modregs[butt2] then
     else
     button2.picturehandle=button_off    
 end if
+
 end procedure
 
 procedure goodbye()

@@ -1,0 +1,60 @@
+-- Für mich selbst als Gedankenstütze
+
+class Ttest
+    object handle
+    
+    procedure show()
+        ?this.handle
+    end procedure
+    
+    function Ttest()
+        this.handle=allocate(4)
+        return this
+    end function
+end class
+
+
+--class Ttest
+--  object handle=allocate(4)
+--  
+--  procedure show()
+--      ?this.handle
+--  end procedure
+--  
+--end class
+
+
+
+Ttest t1=new()
+Ttest t2=new()
+Ttest t3=new()
+
+
+t1.show()
+t2.show()
+t3.show()
+
+
+--Ttest tx
+--object y=repeat(tx,500)
+
+object x=repeat(0,500)
+for i=1 to 500  do
+    x[i]=new(Ttest)
+end for
+
+--for i=1 to 500  do
+--object th
+--  th=x[i]
+--  th.show()
+--end for
+
+for i=1 to 500  do
+Ttest th
+    th=x[i]
+    th.show()
+end for
+
+
+
+wait_key()

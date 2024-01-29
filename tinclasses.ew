@@ -470,7 +470,7 @@ end class
 
 
 global class Ttimer
-        atom handle=allocate(4)
+        atom handle
 public  atom ticks=0
 
     procedure run()
@@ -478,10 +478,15 @@ public  atom ticks=0
     end procedure
 
     procedure stop()
-        SetWinTimer(Null,this.handle)   
+        SetWinTimer(Null,this.handle)  
     end procedure
     
     procedure eventhandler(integer  rid )
         SetHandler(this.handle,Time,rid)
     end procedure
+    
+    function Ttimer()
+        this.handle=allocate(4)
+        return this
+    end function
 end class

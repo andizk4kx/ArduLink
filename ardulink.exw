@@ -55,7 +55,7 @@ atom button_off=LoadPic("button_off.ico")
 -- create the App with the main Window
 Tapp myApp=new({"ArduLink "})
 myApp.width=900
-myApp.height=320
+myApp.height=330
 myApp.xpos=ScreenWidth()/2 -450
 myApp.ypos=ScreenHeight()/2 -150
 myApp.exitrid=goodbye
@@ -96,7 +96,7 @@ group_led.parent()
 group_led.xpos=150
 group_led.ypos=0
 group_led.width=480-220
-group_led.height=265
+group_led.height=275
 
 
 Tbutton red_led=new({xlt("Led An")})
@@ -221,7 +221,7 @@ group_button.parent()
 group_button.xpos=160+260
 group_button.ypos=130
 group_button.width=480-140
-group_button.height=135
+group_button.height=145
 
 Tpicture button1 = new()
 button1.xpos=10
@@ -443,6 +443,9 @@ transfer.caption=xlt("Fehler :")&sprintf("%d",ErrCountSum)&xlt(" Gesamt :")&spri
 --      end for
 --  end if
 --  puts(1,"\n")
+slider_pot.pos=modregs[poti]
+slider_ldr.pos=modregs[ldr]
+
 if equal(modregs[butt1..yellow],modregs_old[butt1..yellow]) then
     return -- keine änderung? Dann nix machen. Ansonsten --> Speicherleck mit STM_SETIMAGE???
 end if
@@ -467,8 +470,6 @@ if modregs[yellow] then
 else
     yellowled.picturehandle=ledoff 
 end if
-slider_pot.pos=modregs[poti]
-slider_ldr.pos=modregs[ldr]
 
 if modregs[butt1] then
     button1.picturehandle=button_on

@@ -36,20 +36,20 @@ atom bullshit=#DEADBEEF
 
 
 -- load resources
-UseTransparentPics=True
+--UseTransparentPics=True
 atom connected=LoadIco("usb-connected.ico")
 atom disconnected=LoadIco("usb-not-connected.ico")
 atom font_lucida12 = NewFont("Lucida Sans", 12, False,False,False)
 atom font_lucida10 = NewFont("Lucida Sans", 10, False,False,False)
 atom font_fn_default=FN_DEFAULT
 FN_DEFAULT=font_lucida12
-atom ledoff=LoadPic("icon_off.ico")
-atom ledblue=LoadPic("icon_blue.ico")
-atom ledred=LoadPic("icon_red.ico")
-atom ledgreen=LoadPic("icon_green.ico")
-atom ledyellow=LoadPic("icon_yellow.ico")
-atom button_on=LoadPic("button_on.ico")
-atom button_off=LoadPic("button_off.ico")
+atom ledoff=LoadPic("icon_off.bmp")
+atom ledblue=LoadPic("icon_blue.bmp")
+atom ledred=LoadPic("icon_red.bmp")
+atom ledgreen=LoadPic("icon_green.bmp")
+atom ledyellow=LoadPic("icon_yellow.bmp")
+atom button_on=LoadPic("button_on.bmp")
+atom button_off=LoadPic("button_off.bmp")
 
 --{}=create_thread(getports)
 -- create the App with the main Window
@@ -147,33 +147,46 @@ xyellow_led.ypos=202+10
 xyellow_led.caption=xlt("Led Aus")
 xyellow_led.eventhandler(Click,toggle_led)
 
-Tpicture  redled =new()
+--Tpicture redled =new()
+--redled.xpos=250-150
+--redled.ypos=10
+--redled.height=64
+--redled.width=64
+--redled.picturehandle=ledred
+
+Ttogglepic redled =new()
 redled.xpos=250-150
 redled.ypos=10
 redled.height=64
 redled.width=64
-redled.picturehandle=ledred
+redled.onpic=ledred
+redled.offpic=ledoff
+redled.on()
+redled.off()
 
-Tpicture  greenled =new()
+Ttogglepic  greenled =new()
 greenled.xpos=250-150
 greenled.ypos=74
 greenled.height=64
 greenled.width=64
-greenled.picturehandle=ledgreen
+greenled.onpic=ledgreen
+greenled.offpic=ledoff
 
-Tpicture  blueled =new()
+Ttogglepic  blueled =new()
 blueled.xpos=250-150
 blueled.ypos=138
 blueled.height=64
 blueled.width=64
-blueled.picturehandle=ledblue
+blueled.onpic=ledblue
+blueled.offpic=ledoff
 
-Tpicture  yellowled =new()
+Ttogglepic  yellowled =new()
 yellowled.xpos=250-150
 yellowled.ypos=202
 yellowled.height=64
 yellowled.width=64
-yellowled.picturehandle=ledyellow
+yellowled.onpic=ledyellow
+yellowled.offpic=ledoff
 
 myApp.parent()
 myApp.update()
@@ -230,14 +243,14 @@ button1.height=64
 button1.width=148
 button1.picturehandle=button_off
 
-Tpicture button2 = new()
+Tpicture button2 = new({"ghg"})
 button2.xpos=180
 button2.ypos=50
 button2.height=64
 button2.width=148
 button2.picturehandle=button_off
 
-group_button.update()
+myApp.update()
 
 mydialog.parent()
 Tgroup group_rtu =new({"RTU Parameter"})
@@ -447,28 +460,33 @@ slider_pot.pos=modregs[poti]
 slider_ldr.pos=modregs[ldr]
 
 if equal(modregs[butt1..yellow],modregs_old[butt1..yellow]) then
-    return -- keine änderung? Dann nix machen. Ansonsten --> Speicherleck mit STM_SETIMAGE???
+--  return -- keine änderung? Dann nix machen. Ansonsten --> Speicherleck mit STM_SETIMAGE???
 end if
 
+--if modregs[red] then
+--  redled.picturehandle=ledred
+--else
+--  redled.picturehandle=ledoff 
+--end if
 if modregs[red] then
-    redled.picturehandle=ledred
+    redled.on()
 else
-    redled.picturehandle=ledoff 
+    redled.off() 
 end if
 if modregs[green] then
-    greenled.picturehandle=ledgreen
+    greenled.on()
 else
-    greenled.picturehandle=ledoff 
+    greenled.off()
 end if
 if modregs[blue] then
-    blueled.picturehandle=ledblue
+    blueled.on()
 else
-    blueled.picturehandle=ledoff 
+    blueled.off()
 end if
 if modregs[yellow] then
-    yellowled.picturehandle=ledyellow
+    yellowled.on()
 else
-    yellowled.picturehandle=ledoff 
+    yellowled.off()
 end if
 
 if modregs[butt1] then

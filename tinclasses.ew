@@ -343,6 +343,59 @@ global class Tpicture extends Tcontrol
     end function
 end class
 
+global class Ttogglepic extends Tcontrol    
+    sequence picture=""
+    atom onpic=0
+    atom offpic=0
+    atom iconhandle
+
+    procedure on()
+        Void= SendMessage (this.handle,STM_SETIMAGE,IMAGE_BITMAP,this.onpic)
+            if Void=onpic or Void=offpic then
+            --do nothing
+        else
+            Void=c_func(myDeleteObject,{handle})
+        end if
+    end procedure
+    
+    procedure off()
+        Void= SendMessage (this.handle,STM_SETIMAGE,IMAGE_BITMAP,this.offpic)
+        if Void=onpic or Void=offpic then
+            --do nothing
+        else
+            Void=c_func(myDeleteObject,{handle})
+        end if
+    end procedure
+
+    function Ttogglepic(sequence title="xyz",integer controltype=Picture)
+        this.Type=controltype
+        this.handle=Control(this.Type,title,this.xpos,this.ypos,this.width,this.height)
+        SetWindowTheme(this.handle)
+        return this
+    end function
+    
+    procedure set_picture(sequence picturefile)
+        this.picture=picturefile
+        this.iconhandle=LoadPic(this.picture)
+        SetPic(this.handle,Picture,this.iconhandle)
+    end procedure
+
+    procedure set_onpic(atom handle)
+        this.onpic=handle
+        --SetPic(this.handle,Picture,this.picturehandle) -- seems to chew up Ram if called repeatedly
+        Void= SendMessage (this.handle,STM_SETIMAGE,IMAGE_BITMAP,this.onpic) -- the same with this
+    end procedure
+
+    procedure set_offpic(atom handle)
+        this.offpic=handle
+        --SetPic(this.handle,Picture,this.picturehandle) -- seems to chew up Ram if called repeatedly
+        Void= SendMessage (this.handle,STM_SETIMAGE,IMAGE_BITMAP,this.offpic) -- the same with this
+    end procedure
+    function get_picturehandle()
+        return this.picturehandle
+    end function
+end class
+
 global class Tlabel extends Tcontrol
     function Tlabel(sequence title="xyz",integer controltype=Label)
         this.Type=controltype

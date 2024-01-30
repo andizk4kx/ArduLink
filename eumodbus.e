@@ -199,6 +199,7 @@ atom result
 atom buffer=allocate(2*reg_count)
     poke2(buffer,value)
     result=c_func(modbus_write_registers,{ctx,addr,reg_count,buffer})
+    free(buffer)
 return result    
 end function
 

@@ -235,7 +235,7 @@ atom myLoadIcon, myLoadCursor,mySetCursor, myGetStockObject, myRegisterClassEx,
         myGetWindowText,myGetDesktopWindow,myGetActiveWindow,mySetActiveWindow,myGetTopWindow,myGetNextWindow,
         myMessageBox,mySetForegroundWindow,myGetVersionEx,mySetWindowsHookEx,myUnhookWindowsHookEx,myCallNextHookEx,
         myExitWindowsEx,myGetClassName,myGetDC,myGetWindowDC,myReleaseDC,mySleep,mySetBkColor
-atom myCreateSolidBrush,myDeleteObject,myGetSysColorBrush,myInvalidateRect,myGetWindowRect,mySelectObject,myStretchBlt,
+global atom myCreateSolidBrush,myDeleteObject,myGetSysColorBrush,myInvalidateRect,myGetWindowRect,mySelectObject,myStretchBlt,
          myBitBlt,mySetStretchBltMode,myDeleteDC,myCreateFont,myGetTextExtentPoint32,myChooseFont,myGetDeviceCaps,myGetObject
 atom myEllipse
 atom myMapVirtualKey,myPostMessage,mykeybd_event,myGetKeyState,mySetBkMode,mySetTextColor

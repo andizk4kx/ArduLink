@@ -67,7 +67,9 @@ global class Twindow nullable
     procedure bye()
     if AskMsg(exit_text,exit_title) then
         --FreeConsole()
+        if this.exitrid>0 then
         call_proc(this.exitrid,{})
+        end if
     CloseApp()
     end if
     end procedure
@@ -333,7 +335,11 @@ global class Tpicture extends Tcontrol
     end procedure
     procedure set_picturehandle(atom handle)
         this.picturehandle=handle
-        SetPic(this.handle,Picture,this.picturehandle)
+        --SetPic(this.handle,Picture,this.picturehandle) -- seems to chew up Ram if called repeatedly
+        Void= SendMessage (this.handle,STM_SETIMAGE,IMAGE_BITMAP,this.picturehandle) -- the same with this
+        if Void then
+            --Void=c_func(myDeleteObject,{handle})
+        end if
     end procedure
     function get_picturehandle()
         return this.picturehandle

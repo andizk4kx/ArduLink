@@ -17,9 +17,13 @@ https://github.com/stephane/libmodbus/wiki
 
 https://github.com/stephane/libmodbus/wiki/Compile-dll-under-Windows-with-Visual-Studio-2008-Express
 
+Librarys für den Arduino:
+
 https://github.com/stephane/modbusino
 
-Qmodbus freies Modbus Master Programm
+https://github.com/charlesbaynham/simple-modbus
+
+Qmodbus freies Modbus Master Programm:
 
 https://qmodbus.sourceforge.net/
 

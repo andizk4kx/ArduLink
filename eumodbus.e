@@ -370,11 +370,11 @@ for i = 1 to length(com_ports) do
     ctx=New_Rtu(com_ports[i])
     if Connect(ctx)<0 then
 --  ifdef DEBUG then 
---      puts(1,"No Port on  "&com_ports[i]&"\n")
+        puts(1,"No Port on  "&com_ports[i]&"\n")
 --  end ifdef
     else
 --  ifdef DEBUG then
---      puts(1,"Port active on  "&com_ports[i]&"\n")
+        puts(1,"Port active on  "&com_ports[i]&"\n")
 --  end ifdef
     result=append(result,com_ports[i])
     end if

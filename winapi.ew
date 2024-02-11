@@ -383,4 +383,47 @@ typedef struct tagLOGFONT {
          
 global constant integer idLOGFONT=define_struct(tLOGFONT)
 global atom pLOGFONT=allocate_struct(idLOGFONT)
-  
+
+-- line 6240 #####################ListView#######################
+
+constant tLVITEM="""
+
+typedef struct {
+  UINT   mask;
+  int    iItem;
+  int    iSubItem;
+  UINT   state;
+  UINT   stateMask;
+  LPTSTR pszText;
+  int    cchTextMax;
+  int    iImage;
+  LPARAM lParam;
+  int    iIndent;
+  int    iGroupId;
+  UINT   cColumns;
+  UINT   puColumns;
+  int    piColFmt;
+  int    iGroup;
+} LVITEM, *LPLVITEM;            
+"""
+global constant integer idLVITEM=define_struct(tLVITEM)
+global atom pLVITEM=allocate_struct(idLVITEM)
+--?get_struct_size(idLVITEM)
+
+constant tLVCOLUMN="""
+typedef struct _LVCOLUMN {
+  UINT   mask;
+  int    fmt;
+  int    cx;
+  LPTSTR pszText;
+  int    cchTextMax;
+  int    iSubItem;
+  int    iImage;
+  int    iOrder;
+  int    cxMin;
+  int    cxDefault;
+  int    cxIdeal;
+} LVCOLUMN, *LPLVCOLUMN;                    
+"""
+global constant integer idLVCOLUMN=define_struct(tLVCOLUMN)
+global atom pLVCOLUMN=allocate_struct(idLVCOLUMN)

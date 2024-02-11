@@ -12,7 +12,7 @@ uint16_t tab_reg[10];
 
 void setup() {
     /* The transfer speed is set to 115200 bauds */
-    modbusino_slave.setup(115200);
+    modbusino_slave.setup(9600);
 
 pinMode(8, INPUT_PULLUP); //Connected to a switch
 pinMode(9, INPUT_PULLUP); //Connected to a switch

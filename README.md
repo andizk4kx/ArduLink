@@ -21,6 +21,8 @@ Librarys für den Arduino:
 
 https://github.com/stephane/modbusino
 
+https://github.com/jecrespo/simple-modbus
+
 https://github.com/charlesbaynham/simple-modbus
 
 Qmodbus freies Modbus Master Programm:

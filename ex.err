@@ -1,0 +1,132 @@
+D:\devpool\phix\builtins\cffi.e:234 in procedure cffi_error()
+crash(`unknown size [`)
+    msg = `unknown size [`
+... called from D:\devpool\phix\builtins\cffi.e:483 in function do_type()
+    mtype = `[`
+    machine = 64'@'
+    substruct = 0
+    size = <novalue>
+    align = <novalue>
+    signed = 1
+    mname = `in`
+    bFunc = 0
+    k = 0
+    ftok = <novalue>
+... called from D:\devpool\phix\builtins\cffi.e:1299 in function define_c()
+    lib = 1.407099524e+14
+    cdef[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
+    cdef[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
+    cdef[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
+    cdef[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    func = 1
+    machine = 64'@'
+    name = `CreateFileA`
+    mtype = `[`
+    substruct = 0
+    size = 8
+    align = 8
+    signed = 1
+    return_type = 33554440
+    ptype = <novalue>
+    rid = <novalue>
+    args = {}
+... called from D:\devpool\phix\builtins\cffi.e:1344 in function define_cffi_func()
+    lib = 1.407099524e+14
+    cdef[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
+    cdef[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
+    cdef[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
+    cdef[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    machine = 64'@'
+... called from D:\devpool\projects\ardulink\serial.ew:71
+
+Global & Local Variables
+
+ D:\devpool\phix\builtins\cffi.e:
+    s[1..115] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dwDes"
+    s[116..230] = "iredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAt"
+    s[231..345] = "tributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD                 dwFl"
+    s[346..419] = "agsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    ch = 93']'
+    sidx = 26
+    L = 4
+    SizeNames = {`char`,`uchar`,`short`,`ushort`,`int`,`uint`,`long`,`ulong`,`float`,`double`,`int64`,`uint64`,`ptr`,`size_t`}
+    SizeSigns = {1,0,1,0,1,0,1,0,1,1,1,0,1,1}
+    Sizes = {{1,1},{1,1},{2,2},{2,2},{4,4},{4,4},{4,4},{4,4},{4,4},{8,8},{8,8},{8,8},{4,8},{4,8}}
+    as_char = 1
+    as_uchar = 2
+    as_int = 5
+    as_uint = 6
+    as_ptr = 13
+    as_short = 3
+    as_ushort = 4
+    as_long = 7
+    as_ulong = 8
+    as_float = 9
+    as_double = 10
+    as_int64 = 11
+    as_uint64 = 12
+    AltNames[1..12] = {`PWORD`,`PDWORD`,`PBYTE`,`PBOOLEAN`,`HANDLE`,`HACCEL`,`HBITMAP`,`HBRUSH`,`HCOLORSPACE`,`HCONV`,`HCONVLIST`,`HDC`}
+    AltNames[13..24] = {`HDDEDATA`,`HDESK`,`HDROP`,`HDWP`,`HENHMETAFILE`,`HFONT`,`HGDIOBJ`,`HGLOBAL`,`HHOOK`,`HICON`,`HCURSOR`,`HINSTANCE`}
+    AltNames[25..37] = {`HKEY`,`HKL`,`HLOCAL`,`HMENU`,`HMETAFILE`,`HMODULE`,`HMONITOR`,`HPALETTE`,`HPEN`,`HRGN`,`HRSRC`,`HSZ`,`HTREEITEM`}
+    AltNames[38..49] = {`HWINSTA`,`HWND`,`PBOOL`,`PCHAR`,`PCSTR`,`PCTSTR`,`PCWSTR`,`PDWORDLONG`,`PDWORD_PTR`,`PDWORD32`,`PDWORD64`,`PFLOAT`}
+    AltNames[50..61] = {`PHANDLE`,`PHKEY`,`PINT`,`PINT_PTR`,`PINT8`,`PINT16`,`PINT32`,`PINT64`,`PLCID`,`PLONG`,`PLONGLONG`,`PLONG_PTR`}
+    AltNames[62..73] = {`PLONG32`,`PLONG64`,`PSHORT`,`PSTR`,`PTBYTE`,`PTCHAR`,`PTSTR`,`PUCHAR`,`PUINT`,`PUINT_PTR`,`PUINT8`,`PUINT16`}
+    AltNames[74..84] = {`PUINT32`,`PUINT64`,`PULONG`,`PULONGLONG`,`PULONG_PTR`,`PULONG32`,`PULONG64`,`PUSHORT`,`PVOID`,`PWCHAR`,`PWSTR`}
+    AltNames[85..96] = {`UINT_PTR`,`WPARAM`,`LONG_PTR`,`LRESULT`,`DWORD_PTR`,`ULONG_PTR`,`INT_PTR`,`WNDPROC`,`BYTE`,`BOOLEAN`,`CCHAR`,`CHAR`}
+    AltNames[97..110] = {`INT8`,`gint8`,`UCHAR`,`UINT8`,`u_char`,`WORD`,`ATOM`,`LANGID`,`INT16`,`SHORT`,`UINT16`,`guint16`,`USHORT`,`WCHAR`}
+    AltNames[111..124] = {`u_short`,`BOOL`,`HFILE`,`INT`,`INT32`,`LONG32`,`gint`,`REGSAM`,`DWORD32`,`UINT`,`UINT32`,`guint32`,`ULONG32`,`guint`}
+    AltNames[125..137] = {`LONG`,`HRESULT`,`DWORD`,`COLORREF`,`LCID`,`LCTYPE`,`LGRPID`,`SOCKET`,`ULONG`,`u_long`,`FLOAT`,`gdouble`,`INT64`}
+    AltNames[138..147] = {`LONGLONG`,`LONG64`,`DWORDLONG`,`DWORD64`,`QWORD`,`UINT64`,`uint64_t`,`ULONGLONG`,`ULONG64`,`GdkEventType`}
+    AltNames[148..154] = {`GdkCrossingMode`,`GdkNotifyType`,`gboolean`,`gint16`,`byte`,`ubyte`,`ModifierType`}
+    AltSize[1..39] = {13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13}
+    AltSize[40..78] = {13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13}
+    AltSize[79..130] = {13,13,13,13,13,13,13,13,13,13,13,13,13,13,1,1,1,1,1,1,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,6,6,7,7,8,8,8,8}
+    AltSize[131..154] = {8,8,8,8,9,10,11,11,11,12,12,12,12,12,12,12,7,5,5,5,3,1,2,5}
+    unicode = 0
+    UnicodeNames = {`TBYTE`,`TCHAR`}
+    UnicodeAs = {{1,4},{1,4}}
+    convert_types = 0
+    structs = {}
+    stsizes = {}
+    saligns = {}
+    smembers = {}
+    dll_names = {}
+    dll_addrs = {}
+    C_SIZES = {{2,1},{2,0},{4,0},{4,1},{8,0},{8,1}}
+    C_CONSTS = {16777218,33554434,33554436,16777220,33554440,33554440}
+    cffi_init = 1
+
+ D:\devpool\phix\builtins\VM\pcfunc.e:
+    libaninit = 0
+    libaddrs = <novalue>
+    libnames = <novalue>
+    libsafe = <novalue>
+    table = {{`GetLastError`,1.407099524e+14,{},33554436,1,1}}
+    previd = {}
+    prevcb = {}
+    tinit = 1
+    tcs = 2287286
+    tmax = 1
+
+ D:\devpool\projects\ardulink\serial.ew:
+    tStr[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
+    tStr[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
+    tStr[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
+    tStr[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+
+ D:\devpool\phix\builtins\VM\pprntfN.e:
+    init2 = 0
+    inf = <novalue>
+    nan = <novalue>
+    prefer_backtick = 0
+    hexchar = <novalue>
+    dxoetc = <novalue>
+    bases = <novalue>
+    unicode_align = 0
+
+ D:\devpool\phix\builtins\get.e:
+    input_file = <novalue>
+    input_string = <novalue>
+    string_next = 0
+    ch = 0
+    get_line_no = 0

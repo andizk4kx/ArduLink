@@ -361,7 +361,7 @@ end function
 -- Zusaetzliche Helferfunktionen
 
 sequence com_ports={"COM1:","COM2:","COM3:","COM4:",
-                    "COM5:","COM6:","COM7:","COM8:","COM9:"}
+                    "COM5:","COM6:","COM7:","COM8:","COM9:","COM10:","COM11:","COM12:","COM13:","COM14:","COM15:","COM16:","COM17:","COM18:","COM19:","COM20:"}
 
 public function Scan_Com_Ports()
 atom ctx=0
@@ -370,11 +370,11 @@ for i = 1 to length(com_ports) do
     ctx=New_Rtu(com_ports[i])
     if Connect(ctx)<0 then
 --  ifdef DEBUG then 
-        puts(1,"No Port on  "&com_ports[i]&"\n")
+--      puts(1,"No Port on  "&com_ports[i]&"\n")
 --  end ifdef
     else
 --  ifdef DEBUG then
-        puts(1,"Port active on  "&com_ports[i]&"\n")
+--      puts(1,"Port active on  "&com_ports[i]&"\n")
 --  end ifdef
     result=append(result,com_ports[i])
     end if

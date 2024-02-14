@@ -1,0 +1,918 @@
+--NAME: serial.ew
+--DESCRIPTION: library for using serial ports on windows
+--PLATFORM: windows
+--AUTHOR: Jacques Deschênes
+--DATE: 2008-12-01
+--REF: http://msdn.microsoft.com/en-us/library/aa363195(VS.85).aspx 
+--     http://msdn.microsoft.com/en-us/library/aa364232(VS.85).aspx
+--14.02.2024 start porting to Phix 64bit
+without warning
+include cffi.e
+--include dll.e
+--include machine.e
+--include get.e
+
+constant kernel=open_dll("kernel32.dll")
+sequence tStr=""
+
+constant MAXDWORD=#FFFFFFFF
+
+-- set those bits of flags DWORD that are in sequence bits
+-- input:  flags = DWORD, bits = {b1,b2,..,bn} where n in range 1-32
+-- output: modified flags
+function set_bits(atom flags, sequence bits)
+    for i = 1 to length(bits) do
+       flags = or_bits(flags,power(2,bits[i]-1))  
+    end for
+    return flags
+end function
+
+-- clear those bits of flags DWORD that are in sequence bits
+-- input: flags = DWORD, bits = bits = {b1,b2,..,bn} where n in range 1-32 
+function clear_bits(atom flags, sequence bits)
+   for i = 1 to length(bits) do
+      flags = and_bits(flags,not_bits(power(2,bits[i]-1)))
+   end for
+   return flags
+end function
+
+-- test the status of a bit inside a DWORD
+-- input: dword,  bit 1-32 
+function test_bit(atom dword, integer bit)
+    if and_bits(dword,power(2,bit-1)) then
+       return 1
+    else
+       return 0
+    end if
+end function
+
+
+--REF: http://msdn.microsoft.com/en-us/library/ms679360.aspx
+constant iGetLastError = define_c_func(kernel,"GetLastError",{},C_DWORD)
+function GetLastError()
+  return c_func(iGetLastError,{})
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363858(VS.85).aspx
+--constant iCreateFile = define_c_func(kernel,"CreateFileA",{C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT},C_INT)
+tStr="""
+HANDLE CreateFileA(
+  [in]           LPCSTR                lpFileName,
+  [in]           DWORD                 dwDesiredAccess,
+  [in]           DWORD                 dwShareMode,
+  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  [in]           DWORD                 dwCreationDisposition,
+  [in]           DWORD                 dwFlagsAndAttributes,
+  [in, optional] HANDLE                hTemplateFile
+);
+"""
+--LPSECURITY_ATTRIBUTES replaced with LPVOID
+set_unicode(0)
+constant iCreateFile=define_cffi_func(kernel,tStr)
+
+constant
+     GENERIC_READ    = #80000000,
+     GENERIC_WRITE   = #40000000,
+     OPEN_EXISTING   = 3
+                                   
+-- open a serial port and return the handle
+global function serial_open(integer com)
+atom fn_val, pComm
+   pComm = allocate_string(sprintf("\\\\.\\com%d",com))
+   fn_val = c_func(iCreateFile,{pComm,
+                    GENERIC_READ+GENERIC_WRITE,
+                    0,
+                    0,
+                    OPEN_EXISTING,
+                    0,
+                    0
+                    })
+   free(pComm)
+   return fn_val                
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/ms724211.aspx
+--constant iCloseHandle = define_c_func(kernel,"CloseHandle",{C_UINT},C_INT)
+tStr="""
+BOOL CloseHandle(
+  [in] HANDLE hObject
+);
+"""
+set_unicode(0)
+constant iCloseHandle=define_cffi_func(kernel,tStr)
+
+global procedure serial_close(atom hCom)
+atom fn_val
+  fn_val = c_func(iCloseHandle,{hCom})   
+end procedure
+
+--REF: http://msdn.microsoft.com/en-us/library/aa365467(VS.85).aspx
+--constant iReadFile = define_c_func(kernel,"ReadFile",{C_POINTER,C_POINTER,C_UINT,C_POINTER,C_POINTER},C_INT)
+tStr="""BOOL ReadFile(
+  [in]                HANDLE       hFile,
+  [out]               LPVOID       lpBuffer,
+  [in]                DWORD        nNumberOfBytesToRead,
+  [out, optional]     LPDWORD      lpNumberOfBytesRead,
+  [in, out, optional] LPOVERLAPPED lpOverlapped
+);
+"""
+set_unicode(0)
+constant iReadFile=define_cffi_func(kernel,tStr)
+
+--REF: http://msdn.microsoft.com/en-us/library/aa365747(VS.85).aspx
+--constant iWriteFile = define_c_func(kernel,"WriteFile",{C_INT,C_INT,C_INT,C_INT,C_INT},C_INT)
+tStr="""
+BOOL WriteFile(
+  [in]                HANDLE       hFile,
+  [in]                LPCVOID      lpBuffer,
+  [in]                DWORD        nNumberOfBytesToWrite,
+  [out, optional]     LPDWORD      lpNumberOfBytesWritten,
+  [in, out, optional] LPOVERLAPPED lpOverlapped
+);
+"""
+set_unicode(0)
+constant iWriteFile=define_cffi_func(kernel,tStr)
+-- communication parameters constants
+global constant  -- REF: http://msdn.microsoft.com/en-us/library/aa363214(VS.85).aspx
+  DTR_CONTROL_DISABLE = 0, --Disables the DTR line when the device is opened and leaves it disabled.
+  DTR_CONTROL_ENABLE = 1, --Enables the DTR line when the device is opened and leaves it on.
+  DTR_CONTROL_HANDSHAKE =2, --Enables DTR handshaking. If handshaking is enabled, 
+                            --it is an error for the application to adjust the line by using 
+                            --the EscapeCommFunction function.
+                            
+  RTS_CONTROL_DISABLE = 0, --Disables the RTS line when the device is opened and leaves it disabled.
+  RTS_CONTROL_ENABLE = 1, --Enables the RTS line when the device is opened and leaves it on.
+  RTS_CONTROL_HANDSHAKE = 2, --Enables RTS handshaking. The driver raises the RTS line when 
+                             --the "type-ahead" (input) buffer is less than one-half full and 
+                             --lowers the RTS line when the buffer is more than three-quarters full.
+                             --If handshaking is enabled, it is an error for the application 
+                             --to adjust the line by using the EscapeCommFunction function.
+
+  RTS_CONTROL_TOGGLE = 3, --Specifies that the RTS line will be high if bytes 
+                          --are available for transmission. After all buffered
+                          --bytes have been sent, the RTS line will be low.
+                          
+  EVENPARITY = 2, --Even parity.
+  MARKPARITY = 3, --Mark parity.
+  NOPARITY = 0, --No parity.
+  ODDPARITY = 1, -- Odd parity
+  SPACEPARITY = 4, -- Space parity
+  
+  ONESTOPBIT = 0, --1 stop bit.
+  ONE5STOPBITS = 1, -- 1.5 stop bits.
+  TWOSTOPBITS = 2, -- 2 stops bits
+
+-- baud rates
+  VALID_BAUD={110,330,600,1200,2400,4800,9600,14400,19200,38400,57600,115200,128000,256000}
+
+global constant -- communication errors
+  CE_BREAK = #0010,--The hardware detected a break condition.
+  CE_FRAME = #0008,--The hardware detected a framing error.
+  CE_OVERRUN = #0002,--A character-buffer overrun has occurred. The next character is lost.
+  CE_RXOVER = #0001,--An input buffer overflow has occurred.
+                    -- There is either no room in the input buffer, 
+                    -- or a character was received after the end-of-file (EOF) character.
+  CE_RXPARITY = #0004 --The hardware detected a parity error.
+
+global constant -- escape functions
+  CLRBREAK = 9, --Restores character transmission and places the transmission 
+                --line in a nonbreak state. The CLRBREAK extended function code
+                --is identical to the ClearCommBreak function.
+  
+  CLRDTR = 6, --Clears the DTR (data-terminal-ready) signal.
+  
+  CLRRTS = 4, --Clears the RTS (request-to-send) signal.
+  
+  SETBREAK = 8, --Suspends character transmission and places the transmission 
+                --line in a break state until the ClearCommBreak function is 
+                --called (or EscapeCommFunction is called with the CLRBREAK 
+                --extended function code). The SETBREAK extended function 
+                --code is identical to the SetCommBreak function. Note that 
+                --this extended function does not flush data that has not 
+                --been transmitted.
+
+  SETDTR = 5, --Sends the DTR (data-terminal-ready) signal.
+
+  SETRTS = 3, --Sends the RTS (request-to-send) signal.
+
+  SETXOFF = 1, --Causes transmission to act as if an XOFF character 
+               --has been received.
+
+  SETXON = 2 --Causes transmission to act as if an XON character has been 
+             --received.
+
+global constant -- provider subtype
+  PST_UNSPECIFIED = 0,    
+  PST_RS232 = 1
+
+global constant -- event mask
+  EV_BREAK = #40,--A break was detected on input.
+  
+  EV_CTS = #0008, --The CTS (clear-to-send) signal changed state.
+
+  EV_DSR = #0010, --The DSR (data-set-ready) signal changed state.
+
+  EV_ERR = #0080, --A line-status error occurred. Line-status 
+                  --errors are CE_FRAME, CE_OVERRUN, and CE_RXPARITY.
+
+  EV_EVENT1 = #0800, --An event of the first provider-specific type occurred.
+
+  EV_EVENT2 = #1000, --An event of the second provider-specific type occurred.
+
+  EV_PERR = #0200, --A printer error occurred.
+
+  EV_RING = #0100, --A ring indicator was detected.
+
+  EV_RLSD = #0020, --The RLSD (receive-line-signal-detect) signal changed state.
+
+  EV_RX80FULL = #0400, --The receive buffer is 80 percent full.
+
+  EV_RXCHAR = #0001, --A character was received and placed in the input buffer.
+
+  EV_RXFLAG = #0002, --The event character was received and placed in the input
+                     --buffer. The event character is specified in the device's 
+                     --DCB structure, which is applied to a serial port by using
+                     --the SetCommState function.
+
+  EV_TXEMPTY = #0004 --The last character in the output buffer was sent.
+
+
+global constant -- modem status constant
+  MS_CTS_ON  = #0010,   -- The CTS (clear-to-send) signal is on.
+  MS_DSR_ON  = #0020,   -- The DSR (data-set-ready) signal is on.
+  MS_RING_ON = #0040,   -- The ring indicator signal is on.
+  MS_RLSD_ON = #0080    -- The RLSD (receive-line-signal-detect) signal is on.
+
+global constant -- PurgeComm constants
+  PURGE_RXABORT = #0002, -- Terminates all outstanding overlapped read operations 
+                         -- and returns immediately, even if the read operations 
+                         -- have not been completed.
+
+  PURGE_RXCLEAR = #0008, -- Clears the input buffer (if the device driver has one).
+  PURGE_TXABORT = #0001, -- Terminates all outstanding overlapped write operations
+                         -- and returns immediately, even if the write operations
+                         -- have not been completed.
+
+  PURGE_TXCLEAR = #0004  -- Clears the output buffer (if the device driver has one).
+  
+------------------------
+--- structures ---------
+------------------------
+
+-- DCB
+-- REF: http://msdn.microsoft.com/en-us/library/aa363214(VS.85).aspx 
+constant
+  DCB_length=0,
+  DCB_BaudRate = 4,
+  DCB_flags = 8,
+  DCB_Reserved  = 12,
+  DCB_XonLim = 14,
+  DCB_XoffLim = 16,
+  DCB_ByteSize = 18,
+  DCB_Parity = 19,
+  DCB_StopBits = 20,
+  DCB_XonChar = 21,
+  DCB_XoffChar = 22,
+  DCB_ErrorChar=23,
+  DCB_EofChar = 24,
+  DCB_EvtChar = 25,
+  DCB_Reserved1=26,
+  DCB_SIZE = 28,
+  -- flags bit mask
+  DCB_fBinary = 1,
+  DCB_fParity  =2,
+  DCB_fOutxCtsFlow = 4,
+  DCB_fOutxDsrFlow = 8,
+  DCB_fDtrControl = 16+32,
+  DCB_fDsrSensitivity = 64,
+  DCB_fTXContinueOnXoff = 128,
+  DCB_fOutX  = 256,
+  DCB_fInX  = 512,
+  DCB_fErrorChar = 1024,
+  DCB_fNull = 2048, 
+  DCB_fRtsControl = 4096+8192,
+  DCB_fAbortOnError  = 16384
+
+-- COMMTIMEOUTS
+constant
+  CTO_ReadIntervalTimeout=0,
+  CTO_ReadTotalTimeoutMultiplier=4,
+  CTO_ReadTotalTimeoutConstant =8,
+  CTO_WriteTotalTimeoutMultiplier=12,
+  CTO_WriteTotalTimeoutConstant=16,
+  CTO_SIZE = 20
+  
+
+constant --COMMCONFIG structure
+  COMCONF_Size= 0,
+  COMCONF_Version=4,
+  COMCONF_Reserved=6,
+  COMCONF_dcb=8,
+  COMCONF_ProviderSubType= 36, --COMCONF_dcb+DCB_SIZE,
+  COMCONF_ProviderOffset= 40,
+  COMCONF_ProviderSize=44,
+  COMCONF_ProviderData=48,
+  COMCONF_SIZE= 52 
+
+constant --COMSTAT structure
+  COMSTAT_flags = 0,
+  COMSTAT_cbInQue = 4,
+  COMSTAT_cbOutQue = 8,
+  COMSTAT_SIZE = 12,
+  -- flag bitmask
+  COMSTAT_fCtsHold = 1,
+  COMSTAT_fDsrHold = 2,
+  COMSTAT_fRlsdHold = 4,
+  COMSTAT_fXoffHold = 8,
+  COMSTAT_fXoffSent = 16,
+  COMSTAT_fEof = 32,
+  COMSTAT_fTxim = 64,
+  COMSTAT_fReserved = #FFFFFF80
+  
+constant --COMMPROP structure
+  COMPROP_PacketLength = 0, --
+  COMPROP_PacketVersion = 2, --
+  COMPROP_ServiceMask = 4, --
+  COMPROP_Reserved1 = 8, --
+  COMPROP_MaxTxQueue = 12, --
+  COMPROP_MaxRxQueue = 16, --
+  COMPROP_MaxBaud = 20, --
+  COMPROP_ProvSubType = 24, --
+  COMPROP_ProvCapabilities = 28, --
+  COMPROP_SettableParams = 32, --
+  COMPROP_SettableBaud = 36, --
+  COMPROP_SettableData = 40, --
+  COMPROP_SettableStopParity = 42, --
+  COMPROP_CurrentTxQueue = 44, --
+  COMPROP_CurrentRxQueue = 48, --
+  COMPROP_ProvSpec1 = 52, --
+  COMPROP_ProvSpec2 = 56, --
+  COMPROP_ProvChar =  60, --
+  COMPROP_SIZE = 64
+  
+--REF: http://msdn.microsoft.com/en-us/library/aa363143(VS.85).aspx
+constant iBuildCommDCB=define_c_func(kernel,"BuildCommDCBA",{C_POINTER,C_POINTER},C_INT)
+--BuildCommDCB    Fills a specified DCB structure with values specified in a device-control string.
+-- for description of settings string search "mode command" in windows help
+global function BuildCommDCB(sequence settings)
+object fn_val, pDCB, pSettings
+
+   pSettings = allocate_string(settings)
+   pDCB = allocate(DCB_SIZE)
+   poke4(pDCB,DCB_SIZE) 
+   fn_val = c_func(iBuildCommDCB,{pSettings,pDCB})
+   free(pSettings)
+   if not fn_val then
+     free(pDCB)
+     pDCB=0
+   end if
+   return pDCB
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363145(VS.85).aspx
+constant iBuildCommDCBAndTimeouts=define_c_func(kernel,"BuildCommDCBAndTimeoutsA",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+-- BuildCommDCBAndTimeouts Translates a device-definition string into appropriate device-control block codes and places them into a device control block.
+-- for description of settings string search "mode command" in windows help
+global function BuildDCBAndTimeouts(sequence settings)
+atom fn_val, pSettings, pDCB, pCTO
+    pSettings = allocate_string(settings)
+    pDCB = allocate(DCB_SIZE)
+    poke4(pDCB,DCB_SIZE)
+    pCTO = allocate(CTO_SIZE)
+    fn_val = c_func(iBuildCommDCBAndTimeouts,{pSettings,pDCB,pCTO})
+    free(pSettings)
+    if not fn_val then
+      free(pDCB)
+      free(pCTO)
+      return 0
+    end if
+    return {pDCB,pCTO} 
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363179(VS.85).aspx
+constant iClearCommBreak=define_c_func(kernel,"ClearCommBreak",{C_UINT},C_INT)
+--ClearCommBreak  Restores character transmission for a specified communications device and places the transmission line in a nonbreak state.
+global procedure ClearCommBreak(atom hCom)
+atom fn_val
+  fn_val = c_func(iClearCommBreak,{hCom})
+end procedure
+
+--REF:http://msdn.microsoft.com/en-us/library/aa363180(VS.85).aspx 
+constant iClearCommError=define_c_func(kernel,"ClearCommError",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+--ClearCommError  Retrieves information about a communications error and reports the current status of a communications device.
+global function ClearCommError(atom hCom)
+atom fn_val, pError, pCommStat
+sequence result   
+   pError = allocate(4)
+   pCommStat = allocate(COMSTAT_SIZE)
+   fn_val = c_func(iClearCommError,{hCom,pError,pCommStat})
+   if not fn_val then
+     free(pError)
+     free(pCommStat)
+     return 0
+   else
+     result = {peek4u(pError),{}}
+     for i = 1 to 7 do
+        result[2] &= test_bit(pCommStat,i)
+     end for
+   end if
+   return result
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363187(VS.85).aspx
+constant iCommConfigDialog=define_c_func(kernel,"CommConfigDialogA",{C_POINTER,C_UINT,C_POINTER},C_INT)
+--CommConfigDialog    Displays a driver-supplied configuration dialog box.
+global procedure CommConfigDialog(integer port)
+object fn_val
+atom pPort, pComConf
+
+    pPort = allocate_string(sprintf("com%d",port))
+    pComConf = allocate(COMCONF_SIZE+4)--report error 122 without +4
+    mem_set(pComConf,0,COMCONF_SIZE+4)
+    poke4(pComConf,COMCONF_SIZE+4)
+    poke4(pComConf+COMCONF_ProviderSubType,PST_RS232)
+    fn_val =c_func(iCommConfigDialog,{pPort,0,pComConf})
+    free(pPort)
+    free(pComConf) 
+end procedure
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363254(VS.85).aspx
+constant iEscapeCommFunction=define_c_func(kernel,"EscapeCommFunction",{C_UINT,C_UINT},C_INT)
+--EscapeCommFunction  Directs a specified communications device to perform an extended function.
+global procedure EscapeCommFunction(atom hCom, atom fct)
+atom fn_val
+  fn_val = c_func(iEscapeCommFunction,{hCom,fct})
+end procedure
+
+--REF:http://msdn.microsoft.com/en-us/library/aa363256(VS.85).aspx
+constant iGetCommConfig=define_c_func(kernel,"GetCommConfig",{C_UINT,C_POINTER,C_POINTER},C_INT)
+--GetCommConfig   Retrieves the current configuration of a communications device.
+global function GetCommConfig(atom hCom)
+object fn_val
+atom pConfig, pSize, pDCB
+integer size
+sequence result, dcb
+
+    pConfig = allocate(COMCONF_SIZE)
+    mem_set(pConfig,0,COMCONF_SIZE)
+    poke4(pConfig,COMCONF_SIZE)
+    poke4(pConfig+COMCONF_ProviderSubType,PST_RS232)
+    pSize = allocate(4)
+    poke4(pSize,COMCONF_SIZE)
+    fn_val = c_func(iGetCommConfig,{hCom,pConfig,pSize})
+    size = peek4u(pSize)
+    free(pSize)
+    if not fn_val then
+      free(pConfig)
+      return 0
+    end if
+    result = {}
+    result &= peek4u(pConfig) -- size
+    result &= peek(pConfig+COMCONF_Version)+peek(pConfig+COMCONF_Version+1)*256
+    result &= 0 -- reserved
+    result &= {{}} -- dcb
+    result &= peek4u({pConfig + COMCONF_ProviderSubType, 3})
+    -- peek dcb
+    pDCB = pConfig+COMCONF_dcb
+    dcb = peek4u({pDCB,3})
+    for i = DCB_Reserved to DCB_XoffLim do
+       dcb &= peek(pDCB+i)+peek(pDCB+i+1)*256
+    end for
+    dcb &= peek({pDCB+DCB_ByteSize, 8})
+    dcb &= peek(pDCB+DCB_Reserved1) + peek(pDCB+DCB_Reserved1+1)*256
+    result[4] = dcb
+    free(pConfig)
+    return result
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363257(VS.85).aspx
+constant iGetCommMask=define_c_func(kernel,"GetCommMask",{C_UINT,C_POINTER},C_INT)
+--GetCommMask Retrieves the value of the event mask for a specified communications device.
+global function GetCommMask(atom hCom)
+object fn_val
+atom pEvt, result
+
+   pEvt = allocate(4)
+   fn_val = c_func(iGetCommMask,{hCom,pEvt})
+   result = peek4u(pEvt)
+   free(pEvt)
+   if not fn_val then
+      result = -1
+   end if
+   return result
+end function
+
+--GetCommModemStatus  Retrieves modem control-register values.
+--REF: http://msdn.microsoft.com/en-us/library/aa363258(VS.85).aspx
+constant iGetCommModemStatus=define_c_func(kernel,"GetCommModemStatus",{C_UINT,C_POINTER},C_INT)
+global function GetCommModemStatus(atom hCom)
+atom fn_val, pStatus, result
+
+    pStatus = allocate(4)
+    fn_val = c_func(iGetCommModemStatus,{hCom, pStatus})
+    result = peek4u(pStatus)
+    free(pStatus)
+    if not fn_val then
+       result = -1
+    end if
+    return result   
+end function
+
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363259(VS.85).aspx
+constant iGetCommProperties=define_c_func(kernel,"GetCommProperties",{C_UINT,C_POINTER},C_INT) 
+--GetCommProperties   Retrieves information about the communications properties for a specified communications device.
+global function GetCommProperties(atom hCom)
+object fn_val
+atom pProp
+sequence properties
+   
+   pProp = allocate(COMPROP_SIZE)
+   mem_set(pProp,0,COMPROP_SIZE)
+   fn_val = c_func(iGetCommProperties,{hCom,pProp})
+   properties = {}
+   if not fn_val then
+     free(pProp)
+     return -1
+   end if
+   properties = {peek(pProp)+peek(pProp+1)*256,peek(pProp+2)+peek(pProp+3)*256}
+   properties &= peek4u({pProp+COMPROP_ServiceMask,9})
+   properties &= {peek(pProp+COMPROP_SettableData)+peek(pProp+COMPROP_SettableData+1)*256,
+                  peek(pProp+COMPROP_SettableStopParity)+peek(pProp+COMPROP_SettableStopParity)*256}
+   properties &= peek4u({pProp+COMPROP_CurrentTxQueue,4})                    
+   return properties
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363260(VS.85).aspx
+constant iGetCommState=define_c_func(kernel,"GetCommState",{C_UINT,C_POINTER},C_INT)
+--GetCommState    Retrieves the current control settings for a specified communications device.
+global function GetCommState(atom hCom)
+atom fn_val, pState
+object result
+   pState = allocate(DCB_SIZE)
+   mem_set(pState,0,DCB_SIZE)
+   poke4(pState,DCB_SIZE)
+   fn_val = c_func(iGetCommState,{hCom, pState})
+   if not fn_val then result = GetLastError() end if
+   result = peek4u({pState,3})
+   for i = DCB_Reserved to DCB_XoffLim do
+      result &= peek(pState+i)+peek(pState+i+1)*256
+   end for
+   result &= peek({pState+DCB_ByteSize,8})
+   result &= peek(pState+DCB_Reserved1)+peek(pState+DCB_Reserved1+1)*256
+   free(pState)
+   return result
+end function
+
+--REF: http://msdn.microsoft.com/en-us/library/aa363261(VS.85).aspx
+constant iGetCommTimeouts=define_c_func(kernel,"GetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+--GetCommTimeouts Retrieves the time-out parameters for all read and write operations on a specified communications device.
+global function GetCommTimeouts(atom hCom)
+atom fn_val, pTimeouts
+object result
+    pTimeouts = allocate(CTO_SIZE)
+    fn_val = c_func(iGetCommTimeouts,{hCom,pTimeouts})
+    if not fn_val then
+      result = GetLastError()
+    else
+      result = peek4u({pTimeouts,5})
+    end if
+    free(pTimeouts)
+    return result
+end function
+
+--GetDefaultCommConfig    Retrieves the default configuration for the specified communications device.
+constant iGetDefaultCommConfig=define_c_func(kernel,"GetDefaultCommConfigA",{C_POINTER, C_POINTER,C_POINTER},C_INT)
+--REF:  http://msdn.microsoft.com/en-us/library/aa363262(VS.85).aspx
+global function GetDefaultCommConfig(integer port)
+atom fn_val, pDevice, pCC,pDCB, pSize, size
+sequence result, dcb
+    
+    pDevice = allocate_string(sprintf("com%d",port))
+    pCC = allocate(COMCONF_SIZE)
+    pSize = allocate(COMCONF_SIZE)
+    poke4(pSize,COMCONF_SIZE)
+    poke4(pCC+COMCONF_ProviderSubType,PST_RS232)
+    fn_val = c_func(iGetDefaultCommConfig,{pDevice, pCC, pSize})
+    free(pDevice)
+    if not fn_val then
+      free(pSize)
+      free(pCC)
+      return 0
+    end if
+    size = peek4u(pSize)
+    free(pSize)
+    result = {}
+    result &= peek4u(pCC) -- size
+    result &= peek(pCC+COMCONF_Version)+peek(pCC+COMCONF_Version+1)*256
+    result &= 0  -- reserved
+    result &= {{}} -- dcb
+    result &= peek4u({pCC+COMCONF_ProviderSubType, 3})
+    -- peek dcb
+    pDCB = pCC+COMCONF_dcb
+    dcb = peek4u({pDCB, 3})
+    for i = DCB_Reserved to DCB_XoffLim do
+       dcb &= peek(pDCB+i)+peek(pDCB+i+1)*256
+    end for
+    dcb &= peek({pDCB+DCB_ByteSize, 8})
+    dcb &= peek(pDCB+DCB_Reserved1)+peek(pDCB+DCB_Reserved1+1)*256
+    result[4] = dcb
+    free(pCC)
+    return result
+end function
+
+--PurgeComm   Discards all characters from the output or input buffer of a specified communications resource.
+constant iPurgeComm = define_c_func(kernel,"PurgeComm",{C_UINT,C_UINT},C_INT)
+--REF: http://msdn.microsoft.com/en-us/library/aa363428(VS.85).aspx 
+global procedure PurgeComm(atom hCom, atom flags)
+atom fn_val
+   fn_val = c_func(iPurgeComm,{hCom, flags})
+end procedure
+
+--SetCommBreak    Suspends character transmission for a specified communications device and places the transmission line in a break state.
+--REF: http://msdn.microsoft.com/en-us/library/aa363433(VS.85).aspx 
+constant iSetCommBreak=define_c_func(kernel,"SetCommBreak",{C_UINT},C_UINT)
+global procedure SetCommBreak(atom hCom)
+atom fn_val
+    fn_val = c_func(iSetCommBreak,{hCom})
+end procedure
+
+procedure poke_dcb(atom pDCB, sequence data)
+     poke4(pDCB,data[1..3])
+     poke(pDCB+DCB_Reserved,{0,0})
+     poke(pDCB+DCB_XonLim,{remainder(data[5],256),floor(data[5]/256)})
+     poke(pDCB+DCB_XoffLim,{remainder(data[6],256),floor(data[6]/256)})
+     poke(pDCB+DCB_ByteSize,data[7..14])-- ByteSize,Parity, StopBits,XonChar, XoffChar,ErrorChar,EofChar, EvtChar
+     poke(pDCB+DCB_Reserved1,{0,0})
+end procedure
+
+--SetCommConfig   Sets the current configuration of a communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363434(VS.85).aspx
+constant iSetCommConfig=define_c_func(kernel,"SetCommConfig",{C_UINT,C_POINTER,C_UINT},C_UINT)
+global procedure SetCommConfig(atom hCom, sequence config)
+atom fn_val, pCC
+    pCC = allocate(COMCONF_SIZE)
+    poke4(pCC,COMCONF_SIZE) -- struct size
+    poke(pCC+COMCONF_Version,remainder(config[2],256))-- version low byte
+    poke(pCC+COMCONF_Version+1,floor(config[2]/256))  -- version hi byte
+    poke(pCC+COMCONF_Reserved,{0,0})
+    poke_dcb(pCC+COMCONF_dcb,config[4])
+    poke4(pCC+COMCONF_ProviderSubType,config[5..7]) -- ProviderSubType,ProviderOffset,ProviderSize {1,0,0}
+    fn_val = c_func(iSetCommConfig,{hCom, pCC})
+    free(pCC)   
+end procedure
+
+--SetCommMask Specifies a set of events to be monitored for a communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363435(VS.85).aspx
+constant iSetCommMask=define_c_func(kernel,"SetCommMask",{C_UINT,C_UINT},C_UINT)
+global procedure SetCommMask(atom hCom, atom mask)
+atom fn_val
+    fn_val = c_func(iSetCommMask,{hCom,mask})
+end procedure
+
+
+--REF:http://msdn.microsoft.com/en-us/library/aa363436(VS.85).aspx
+constant iSetCommState=define_c_func(kernel,"SetCommState",{C_UINT,C_POINTER},C_INT)
+--SetCommState    Configures a communications device according to the specifications in a device-control block.
+-- The values argument is a sequence of the form: {paramètre:valeur;...}
+-- accepted parameters are:       baud: 110,330,600,1200,2400,4800,9600,14400,19200,38400,57600,115200,128000,256000
+--                                parity: none, even, odd
+--                                bits: 5-8
+--                                stop: 1,1.5,2
+--                                control: hard|soft|none  
+global procedure SetCommState(atom hCom, sequence values)
+object fn_val
+atom pState, flags, n
+sequence split
+integer p1,p2
+   
+   pState = allocate(DCB_SIZE)
+   mem_set(pState,0,DCB_SIZE)
+   poke4(pState,DCB_SIZE)
+   fn_val = c_func(iGetCommState,{hCom,pState})
+   if not fn_val then free(pState) return end if 
+   flags = peek4u(pState+DCB_flags)
+   split = {}
+   p1 = find(';', values)
+   while p1 do
+      p2 = find(':',values)
+      if not p2 then free(pState) return end if -- bad format
+      split = append(split,{values[1..p2-1],values[p2+1..p1-1]})
+      values = values[p1+1..$]
+      p1 = find(';',values)
+   end while 
+   if length(values) then
+      p2 = find(':',values)
+      if not p2 then free(pState) return end if -- bad format
+      split=append(split,{values[1..p2-1],values[p2+1..$]})
+   end if
+   for i = 1 to length(split) do
+      if equal(split[i][1],"baud") then
+         fn_val = value(split[i][2])
+         p1 = fn_val[2]
+         if fn_val[1] = GET_SUCCESS and find(p1,VALID_BAUD) then
+            poke4(pState+DCB_BaudRate,p1)
+         end if 
+      elsif equal(split[i][1],"parity") then
+         if equal(split[i][2],"none") then
+            flags = clear_bits(flags,{2})
+            poke(pState+DCB_Parity,NOPARITY)
+         elsif equal(split[i][2],"even") then
+            flags = set_bits(flags, {2})
+            poke(pState+DCB_Parity, EVENPARITY) 
+         elsif equal(split[i][2],"odd") then
+            flags =set_bits(flags, {2})
+            poke(pState+DCB_Parity, ODDPARITY) 
+         end if
+      elsif equal(split[i][1],"bits") then
+         fn_val = value(split[i][2])
+         p1 = fn_val[2]
+         if fn_val[1] = GET_SUCCESS and p1>=5 and p1<=8 then
+           poke(pState+DCB_ByteSize,p1) 
+         end if
+      elsif equal(split[i][1],"stop") then
+         fn_val = value(split[i][2])
+         n = fn_val[2]
+         if fn_val[1] = GET_SUCCESS then
+            if n = 1 then
+               poke(pState+DCB_StopBits,ONESTOPBIT)
+            elsif n = 1.5 then
+               poke(pState+DCB_StopBits,ONE5STOPBITS)
+            elsif n = 2 then
+               poke(pState+DCB_StopBits,TWOSTOPBITS)
+            end if
+         end if  
+      elsif equal(split[i][1],"control") then  -- flow control
+         if equal(split[i][2],"hard") then -- hardware control
+             flags = set_bits(flags,{3,4,6,7,8,14})
+             flags = clear_bits(flags,{5,9,10,13})
+         elsif equal(split[i][2],"soft") then  -- software control
+             flags = clear_bits(flags,{3,4,7,8,14})
+             flags = set_bits(flags,{9,10})
+         elsif equal(split[i][2],"none") then  -- no control
+             flags = clear_bits(flags,{3,4,5,6,7,9,10,11,12,13,14,15})
+             flags = set_bits(flags,{8})
+         elsif equal(split[i][2],"magic") then  -- no control
+             flags = 4241 -- The Flags that UGS uses Universal-Gcode-Sender
+         end if
+      end if   
+   end for
+   poke4(pState+DCB_flags,flags)
+   fn_val = c_func(iSetCommState,{hCom,pState})
+   ?fn_val
+   free(pState)           
+end procedure
+
+--REF:http://msdn.microsoft.com/en-us/library/aa363437(VS.85).aspx
+--SetCommTimeouts Sets the time-out parameters for all read and write operations on a specified communications device.
+--paramters: hCom  communction device handle returned by serial_open()
+--           timeouts  sequence  {ReadIntervalTimout, (maximum allowed timeout between two character receive
+--                                ReadTotalTimeoutMultiplier,  ('requested number of char'*ReadTotalTimeoutMultiplier
+--                                ReadTotalTimeoutConstant,     + ReadTotalTimeoutConstant = ReceptionTimeout)
+--                                WriteTotalTimeoutMultiplier, ('number of char written'*WriteTotalTimeoutMultiplier
+--                                WriteTotalTimeoutConstant}    + WriteTotalTimeoutConstant = TransmissionTimeout 
+constant iSetCommTimeouts=define_c_func(kernel,"SetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+global procedure SetCommTimeouts(atom hCom,sequence timeouts)
+object fn_val
+atom  pTimeouts
+
+     pTimeouts = allocate(CTO_SIZE)
+     poke4(pTimeouts,timeouts)
+     fn_val = c_func(iSetCommTimeouts,{hCom,pTimeouts})
+     free(pTimeouts)
+end procedure
+
+--SetDefaultCommConfig    Sets the default configuration for a communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363438(VS.85).aspx
+constant iSetDefaultCommConfig=define_c_func(kernel,"SetDefaultCommConfigA",{C_POINTER,C_POINTER,C_UINT},C_UINT)
+global procedure SetDefaultCommConfig(integer device, sequence config)
+atom fn_val, pDevice, pCC
+    pDevice = allocate_string(sprintf("com%d",device))
+    pCC = allocate(COMCONF_SIZE)
+    poke4(pCC,COMCONF_SIZE) -- struct size
+    poke(pCC+COMCONF_Version,remainder(config[2],256))-- version low byte
+    poke(pCC+COMCONF_Version+1,floor(config[2]/256))  -- version hi byte
+    poke(pCC+COMCONF_Reserved,{0,0})
+    poke_dcb(pCC+COMCONF_dcb,config[4])
+    poke4(pCC+COMCONF_ProviderSubType,config[5..7]) -- ProviderSubType,ProviderOffset,ProviderSize {1,0,0}
+    free(pDevice)
+    free(pCC)  
+end procedure
+
+--SetupComm   Initializes the communications parameters for a specified communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363439(VS.85).aspx
+constant iSetupComm=define_c_func(kernel,"SetupComm",{C_UINT,C_UINT,C_UINT},C_UINT)
+global procedure SetupComm(atom hCom, integer InQueueSize, integer OutQueueSize)
+atom fn_val
+   fn_val = c_func(iSetupComm,{hCom, InQueueSize, OutQueueSize})
+end procedure
+
+--TransmitCommChar   Transmits a specified character ahead of any pending data in the output buffer of the specified communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363473(VS.85).aspx
+constant iTransmitCommChar=define_c_func(kernel,"TransmitCommChar",{C_UINT,C_CHAR},C_INT)
+global procedure TransmitCommChar(atom hCom, integer char)
+atom fn_val
+    fn_val = c_func(iTransmitCommChar,{hCom,char})
+end procedure
+
+--WaitCommEvent   Waits for an event to occur for a specified communications device.
+--REF: http://msdn.microsoft.com/en-us/library/aa363479(VS.85).aspx
+constant iWaitCommEvent=define_c_func(kernel,"WaitCommEvent",{C_UINT,C_POINTER,C_POINTER},C_INT)
+
+
+------------------------------
+-- helper functions
+------------------------------
+
+
+-- write a sequence of bytes to serial port
+global procedure serial_puts(atom hCom, object data)
+object fn_val
+atom pBuffer, pWritten
+integer count
+    
+    if atom(data) then
+       pBuffer=allocate(4)
+       poke(pBuffer,data)
+       count = 1
+    else
+      count = length(data)
+      pBuffer = allocate(count)
+      poke(pBuffer,data)
+    end if
+    pWritten = allocate(4)
+    fn_val = c_func(iWriteFile,{hCom, pBuffer,count,pWritten,0})
+    free(pBuffer)
+    free(pWritten)
+end procedure
+
+-- read 1 character from serial port
+global function serial_getc(atom hCom)
+object fn_val
+atom pBuffer, pRead
+integer count, byte  
+  pBuffer = allocate(8)
+  pRead = pBuffer+4
+  poke4(pRead,0)
+  fn_val =  c_func(iReadFile,{hCom,pBuffer,1,pRead,0})
+  count = peek4u(pRead)
+  byte = peek(pBuffer)
+  free(pBuffer)
+  if not fn_val or count = 0 then
+    return -1
+  else
+    return byte
+  end if  
+end function
+
+-- read bytes from serial port up to '\n' character
+global function serial_gets(atom hCom)
+atom fn_val, pBuffer, pRead
+integer count, byte
+sequence str
+
+  pBuffer = allocate(8)
+  pRead = pBuffer+4  
+  fn_val = c_func(iReadFile,{hCom, pBuffer,1,pRead,0})
+  count = peek4u(pRead)
+  byte = peek(pBuffer)
+  str = ""
+  while fn_val and count do
+     str &= byte
+     if byte = '\n' then
+       exit
+     end if
+     fn_val =  c_func(iReadFile,{hCom, pBuffer,1,pRead,0})
+     count = peek4u(pRead)
+     byte = peek(pBuffer)
+  end while
+  free(pBuffer)
+  return str
+end function
+
+
+--read count bytes from serial port
+global function serial_get_bytes(atom hCom, integer count)
+object fn_val
+atom pBuffer, pRead
+sequence bytes  
+
+  if count < 4 then
+    pBuffer = allocate(8)
+  else
+    pBuffer = allocate(count+4)
+  end if
+  pRead = pBuffer+count
+  poke4(pRead,0)
+  fn_val =  c_func(iReadFile,{hCom,pBuffer,count,pRead,0})
+  count = peek4u(pRead)
+  bytes = peek({pBuffer,count})
+  free(pBuffer)
+  if not fn_val or count = 0 then
+    return -1
+  else
+    return bytes
+  end if  
+end function
+
+                                

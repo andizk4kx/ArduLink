@@ -1,0 +1,48 @@
+include tinlib.ew 
+--include std\filesys.e 
+ 
+WindowType=StandardWin 
+{}=Window("DirTest") 
+atom list=Control(ListView,"",0,0,390,170) 
+ 
+{}=lv_AddColumn(list,"Size",64) 
+{}=lv_AddColumn(list,"Attribut",64) 
+{}=lv_AddColumn(list,"Name",128) 
+{}=lv_AddColumn(list,"Path",64) 
+ 
+atom font=NewFont("Lucida Console",12,0,0,0) 
+SetFont(list,font) 
+ 
+function addfiles(sequence path_name,sequence filename) 
+atom count 
+    count=lv_GetItemCount(list) 
+    --?path_name&filename[D_NAME]
+
+{}= lv_InsertRow(list,count,path_name) 
+{}= lv_SetItem(list,1,count,filename[D_NAME]) 
+{}= lv_SetItem(list,2,count,filename[D_ATTRIBUTES]) 
+{}= lv_SetItem(list,3,count,sprintf("%d",filename[D_SIZE])) 
+return 0   
+end function 
+{}=walk_dir("d:\\",routine_id("addfiles"),False) 
+ 
+procedure listclick() 
+atom index 
+sequence fullname 
+    index=lv_GetIndex(list) 
+    fullname=lv_GetItem(list,0,index)&"\\"&lv_GetItem(list,1,index)&"\\" 
+    --puts(1,fullname&"\n") 
+    if equal(lv_GetItem(list,2,index),"d") then 
+{}=     chdir(ShortFileName(fullname)) 
+        lv_Clear(list) 
+{}=     lv_InsertRow(list,0,"..") -- dummy for cd .. 
+{}=     lv_SetItem(list,2,0,"d")  -- dummy for cd ..  
+{}=     walk_dir(current_dir(),routine_id("addfiles"),False) 
+    elsif equal(lv_GetItem(list,2,index),"a") then 
+        RunApp(ShortFileName(fullname),"") 
+    end if 
+end procedure 
+SetHandler(list,DClick,routine_id("listclick")) 
+ 
+WinMain() 
+ 

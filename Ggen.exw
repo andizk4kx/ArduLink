@@ -1,0 +1,91 @@
+include serial.ew
+include gui\tin\tinewg.exw
+include std\console.e
+
+atom hcom
+object rec
+
+constant set_home="G10 P0 L20 X0 Y0 Z0\n"
+
+
+function wait_response(object seq="ok")
+object rec
+loop do
+    rec=serial_gets(hcom)
+    puts(1,rec)
+    until match(seq,rec)>0 or match("err",rec)
+end loop
+return rec    
+end function
+
+function get_response()
+object rec
+loop do
+    rec=serial_gets(hcom)
+    puts(1,rec)
+    until length(rec)>1
+end loop
+    return rec
+end function
+
+-- CommConfigDialog(7)
+
+hcom=serial_open(8)
+?hcom
+?GetCommState(hcom)
+SetCommState(hcom,"baud:115200;parity:none;bits:8;stop:1;control:magic")
+?GetCommState(hcom)
+wait_response("Grbl")
+serial_puts(hcom,"$$\n")
+wait_response()
+
+serial_puts(hcom,set_home)
+wait_response()
+
+serial_puts(hcom,"$\n")
+wait_response()
+
+
+serial_puts(hcom,"?\n")
+wait_response()
+
+serial_puts(hcom,"$I\n")
+wait_response()
+
+
+serial_puts(hcom,"G00 Z-3.0 F10\n")
+get_response()
+
+serial_puts(hcom,"G01 X110 Y110 F750 \n")
+get_response()
+
+serial_puts(hcom,"G01 X0 Y110 F750 \n")
+get_response()
+
+serial_puts(hcom,"G01 X1 Y110 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X1 Y0 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X2 Y0 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X2 Y110 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X3 Y110 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X3 Y0 F750\n")
+get_response()
+
+serial_puts(hcom,"G01 X0 Y0 F750\n")
+get_response()
+
+serial_puts(hcom,"G00 Z0 F10\n")
+get_response()
+
+serial_close(hcom)
+
+any_key()

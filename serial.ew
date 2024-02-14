@@ -57,13 +57,13 @@ end function
 --constant iCreateFile = define_c_func(kernel,"CreateFileA",{C_INT,C_INT,C_INT,C_INT,C_INT,C_INT,C_INT},C_INT)
 tStr="""
 HANDLE CreateFileA(
-  [in]           LPCSTR                lpFileName,
-  [in]           DWORD                 dwDesiredAccess,
-  [in]           DWORD                 dwShareMode,
-  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-  [in]           DWORD                 dwCreationDisposition,
-  [in]           DWORD                 dwFlagsAndAttributes,
-  [in, optional] HANDLE                hTemplateFile
+  _in_           LPCSTR                lpFileName,
+  _in_           DWORD                 dwDesiredAccess,
+  _in_           DWORD                 dwShareMode,
+  _in_           LPVOID                lpSecurityAttributes,
+  _in_           DWORD                 dwCreationDisposition,
+  _in_           DWORD                 dwFlagsAndAttributes,
+  _in_           HANDLE                hTemplateFile
 );
 """
 --LPSECURITY_ATTRIBUTES replaced with LPVOID (does not help) remove 'optional' also not
@@ -95,7 +95,7 @@ end function
 --constant iCloseHandle = define_c_func(kernel,"CloseHandle",{C_UINT},C_INT)
 tStr="""
 BOOL CloseHandle(
-  [in] HANDLE hObject
+  _in_ HANDLE hObject
 );
 """
 set_unicode(0)
@@ -109,11 +109,11 @@ end procedure
 --REF: http://msdn.microsoft.com/en-us/library/aa365467(VS.85).aspx
 --constant iReadFile = define_c_func(kernel,"ReadFile",{C_POINTER,C_POINTER,C_UINT,C_POINTER,C_POINTER},C_INT)
 tStr="""BOOL ReadFile(
-  [in]                HANDLE       hFile,
-  [out]               LPVOID       lpBuffer,
-  [in]                DWORD        nNumberOfBytesToRead,
-  [out, optional]     LPDWORD      lpNumberOfBytesRead,
-  [in, out, optional] LPOVERLAPPED lpOverlapped
+  _in_                HANDLE       hFile,
+  _out_               LPVOID       lpBuffer,
+  _in_                DWORD        nNumberOfBytesToRead,
+  _out_               LPDWORD      lpNumberOfBytesRead,
+  _in_                LPOVERLAPPED lpOverlapped
 );
 """
 set_unicode(0)
@@ -123,11 +123,11 @@ constant iReadFile=define_cffi_func(kernel,tStr)
 --constant iWriteFile = define_c_func(kernel,"WriteFile",{C_INT,C_INT,C_INT,C_INT,C_INT},C_INT)
 tStr="""
 BOOL WriteFile(
-  [in]                HANDLE       hFile,
-  [in]                LPCVOID      lpBuffer,
-  [in]                DWORD        nNumberOfBytesToWrite,
-  [out, optional]     LPDWORD      lpNumberOfBytesWritten,
-  [in, out, optional] LPOVERLAPPED lpOverlapped
+  _in_                HANDLE       hFile,
+  _in_                LPCVOID      lpBuffer,
+  _in_                DWORD        nNumberOfBytesToWrite,
+  _out_               LPDWORD      lpNumberOfBytesWritten,
+  _in_                LPOVERLAPPED lpOverlapped
 );
 """
 set_unicode(0)
@@ -351,7 +351,16 @@ constant --COMMPROP structure
   COMPROP_SIZE = 64
   
 --REF: http://msdn.microsoft.com/en-us/library/aa363143(VS.85).aspx
-constant iBuildCommDCB=define_c_func(kernel,"BuildCommDCBA",{C_POINTER,C_POINTER},C_INT)
+--constant iBuildCommDCB=define_c_func(kernel,"BuildCommDCBA",{C_POINTER,C_POINTER},C_INT)
+tStr="""
+BOOL BuildCommDCBA(
+  _in_  LPCSTR lpDef,
+  _out_ LPDCB  lpDCB
+);
+"""
+set_unicode(0)
+constant iBuildCommDCB=define_cffi_func(kernel,tStr)
+
 --BuildCommDCB    Fills a specified DCB structure with values specified in a device-control string.
 -- for description of settings string search "mode command" in windows help
 global function BuildCommDCB(sequence settings)
@@ -370,7 +379,16 @@ object fn_val, pDCB, pSettings
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363145(VS.85).aspx
-constant iBuildCommDCBAndTimeouts=define_c_func(kernel,"BuildCommDCBAndTimeoutsA",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+--constant iBuildCommDCBAndTimeouts=define_c_func(kernel,"BuildCommDCBAndTimeoutsA",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+tStr="""
+BOOL BuildCommDCBAndTimeoutsA(
+  _in_  LPCSTR         lpDef,
+  _out_ LPDCB          lpDCB,
+  _out_ LPCOMMTIMEOUTS lpCommTimeouts
+);
+"""
+set_unicode(0)
+constant  iBuildCommDCBAndTimeouts=define_cffi_func(kernel,tStr)
 -- BuildCommDCBAndTimeouts Translates a device-definition string into appropriate device-control block codes and places them into a device control block.
 -- for description of settings string search "mode command" in windows help
 global function BuildDCBAndTimeouts(sequence settings)
@@ -390,7 +408,15 @@ atom fn_val, pSettings, pDCB, pCTO
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363179(VS.85).aspx
-constant iClearCommBreak=define_c_func(kernel,"ClearCommBreak",{C_UINT},C_INT)
+--constant iClearCommBreak=define_c_func(kernel,"ClearCommBreak",{C_UINT},C_INT)
+tStr="""
+BOOL ClearCommBreak(
+  _in_ HANDLE hFile
+);
+"""
+set_unicode(0)
+constant  iClearCommBreak=define_cffi_func(kernel,tStr)
+
 --ClearCommBreak  Restores character transmission for a specified communications device and places the transmission line in a nonbreak state.
 global procedure ClearCommBreak(atom hCom)
 atom fn_val
@@ -398,7 +424,18 @@ atom fn_val
 end procedure
 
 --REF:http://msdn.microsoft.com/en-us/library/aa363180(VS.85).aspx 
-constant iClearCommError=define_c_func(kernel,"ClearCommError",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+--constant iClearCommError=define_c_func(kernel,"ClearCommError",{C_POINTER,C_POINTER,C_POINTER},C_INT)
+
+tStr="""
+BOOL ClearCommError(
+  _in_  HANDLE  hFile,
+  _out_ LPDWORD lpErrors,
+  _out_ LPCOMSTAT lpStat
+);
+"""
+set_unicode(0)
+constant  iClearCommError=define_cffi_func(kernel,tStr)
+
 --ClearCommError  Retrieves information about a communications error and reports the current status of a communications device.
 global function ClearCommError(atom hCom)
 atom fn_val, pError, pCommStat
@@ -420,7 +457,18 @@ sequence result
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363187(VS.85).aspx
-constant iCommConfigDialog=define_c_func(kernel,"CommConfigDialogA",{C_POINTER,C_UINT,C_POINTER},C_INT)
+--constant iCommConfigDialog=define_c_func(kernel,"CommConfigDialogA",{C_POINTER,C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL CommConfigDialogA(
+  _in_      LPCSTR       lpszName,
+  _in_      HWND         hWnd,
+  _in_ LPCOMMCONFIG lpCC
+);
+"""
+set_unicode(0)
+constant  iCommConfigDialog=define_cffi_func(kernel,tStr)
+
 --CommConfigDialog    Displays a driver-supplied configuration dialog box.
 global procedure CommConfigDialog(integer port)
 object fn_val
@@ -437,7 +485,17 @@ atom pPort, pComConf
 end procedure
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363254(VS.85).aspx
-constant iEscapeCommFunction=define_c_func(kernel,"EscapeCommFunction",{C_UINT,C_UINT},C_INT)
+--constant iEscapeCommFunction=define_c_func(kernel,"EscapeCommFunction",{C_UINT,C_UINT},C_INT)
+
+tStr="""
+BOOL WINAPI EscapeCommFunction(
+  _In_  HANDLE hFile,
+  _In_  DWORD dwFunc
+);         
+"""
+set_unicode(0)
+constant  iEscapeCommFunction=define_cffi_func(kernel,tStr)
+
 --EscapeCommFunction  Directs a specified communications device to perform an extended function.
 global procedure EscapeCommFunction(atom hCom, atom fct)
 atom fn_val
@@ -445,7 +503,20 @@ atom fn_val
 end procedure
 
 --REF:http://msdn.microsoft.com/en-us/library/aa363256(VS.85).aspx
-constant iGetCommConfig=define_c_func(kernel,"GetCommConfig",{C_UINT,C_POINTER,C_POINTER},C_INT)
+--constant iGetCommConfig=define_c_func(kernel,"GetCommConfig",{C_UINT,C_POINTER,C_POINTER},C_INT)
+
+tStr="""
+
+BOOL WINAPI GetCommConfig(
+  _In_     HANDLE hCommDev,
+  _Out_    LPCOMMCONFIG lpCC,
+  _Inout_  LPDWORD lpdwSize
+);
+           
+"""
+set_unicode(0)
+constant   iGetCommConfig=define_cffi_func(kernel,tStr)
+
 --GetCommConfig   Retrieves the current configuration of a communications device.
 global function GetCommConfig(atom hCom)
 object fn_val
@@ -486,7 +557,17 @@ sequence result, dcb
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363257(VS.85).aspx
-constant iGetCommMask=define_c_func(kernel,"GetCommMask",{C_UINT,C_POINTER},C_INT)
+--constant iGetCommMask=define_c_func(kernel,"GetCommMask",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetCommMask(
+  _In_   HANDLE hFile,
+  _Out_  LPDWORD lpEvtMask
+);         
+"""
+set_unicode(0)
+constant   iGetCommMask=define_cffi_func(kernel,tStr)
+
 --GetCommMask Retrieves the value of the event mask for a specified communications device.
 global function GetCommMask(atom hCom)
 object fn_val
@@ -504,7 +585,17 @@ end function
 
 --GetCommModemStatus  Retrieves modem control-register values.
 --REF: http://msdn.microsoft.com/en-us/library/aa363258(VS.85).aspx
-constant iGetCommModemStatus=define_c_func(kernel,"GetCommModemStatus",{C_UINT,C_POINTER},C_INT)
+--constant iGetCommModemStatus=define_c_func(kernel,"GetCommModemStatus",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetCommModemStatus(
+  _In_   HANDLE hFile,
+  _Out_  LPDWORD lpModemStat
+);            
+"""
+set_unicode(0)
+constant   iGetCommModemStatus=define_cffi_func(kernel,tStr)
+
 global function GetCommModemStatus(atom hCom)
 atom fn_val, pStatus, result
 
@@ -520,7 +611,17 @@ end function
 
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363259(VS.85).aspx
-constant iGetCommProperties=define_c_func(kernel,"GetCommProperties",{C_UINT,C_POINTER},C_INT) 
+--constant iGetCommProperties=define_c_func(kernel,"GetCommProperties",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetCommProperties(
+  _In_   HANDLE hFile,
+  _Out_  LPCOMMPROP lpCommProp
+);                
+"""
+set_unicode(0)
+constant   iGetCommProperties=define_cffi_func(kernel,tStr)
+ 
 --GetCommProperties   Retrieves information about the communications properties for a specified communications device.
 global function GetCommProperties(atom hCom)
 object fn_val
@@ -544,7 +645,17 @@ sequence properties
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363260(VS.85).aspx
-constant iGetCommState=define_c_func(kernel,"GetCommState",{C_UINT,C_POINTER},C_INT)
+--constant iGetCommState=define_c_func(kernel,"GetCommState",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetCommState(
+  _In_     HANDLE hFile,
+  _Inout_  LPDCB lpDCB
+);                    
+"""
+set_unicode(0)
+constant   iGetCommState=define_cffi_func(kernel,tStr)
+
 --GetCommState    Retrieves the current control settings for a specified communications device.
 global function GetCommState(atom hCom)
 atom fn_val, pState
@@ -565,7 +676,17 @@ object result
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363261(VS.85).aspx
-constant iGetCommTimeouts=define_c_func(kernel,"GetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+--constant iGetCommTimeouts=define_c_func(kernel,"GetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetCommTimeouts(
+  _In_   HANDLE hFile,
+  _Out_  LPCOMMTIMEOUTS lpCommTimeouts
+);            
+"""
+set_unicode(0)
+constant   iGetCommTimeouts=define_cffi_func(kernel,tStr)
+
 --GetCommTimeouts Retrieves the time-out parameters for all read and write operations on a specified communications device.
 global function GetCommTimeouts(atom hCom)
 atom fn_val, pTimeouts
@@ -581,9 +702,20 @@ object result
     return result
 end function
 
---GetDefaultCommConfig    Retrieves the default configuration for the specified communications device.
-constant iGetDefaultCommConfig=define_c_func(kernel,"GetDefaultCommConfigA",{C_POINTER, C_POINTER,C_POINTER},C_INT)
 --REF:  http://msdn.microsoft.com/en-us/library/aa363262(VS.85).aspx
+--GetDefaultCommConfig    Retrieves the default configuration for the specified communications device.
+--constant iGetDefaultCommConfig=define_c_func(kernel,"GetDefaultCommConfigA",{C_POINTER, C_POINTER,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI GetDefaultCommConfig(
+  _In_     LPCTSTR lpszName,
+  _Out_    LPCOMMCONFIG lpCC,
+  _Inout_  LPDWORD lpdwSize
+);        
+"""
+set_unicode(0)
+constant   iGetDefaultCommConfig=define_cffi_func(kernel,tStr)
+
 global function GetDefaultCommConfig(integer port)
 atom fn_val, pDevice, pCC,pDCB, pSize, size
 sequence result, dcb
@@ -622,8 +754,18 @@ sequence result, dcb
 end function
 
 --PurgeComm   Discards all characters from the output or input buffer of a specified communications resource.
-constant iPurgeComm = define_c_func(kernel,"PurgeComm",{C_UINT,C_UINT},C_INT)
+--constant iPurgeComm = define_c_func(kernel,"PurgeComm",{C_UINT,C_UINT},C_INT)
 --REF: http://msdn.microsoft.com/en-us/library/aa363428(VS.85).aspx 
+
+tStr="""
+BOOL WINAPI PurgeComm(
+  _In_  HANDLE hFile,
+  _In_  DWORD dwFlags
+);  
+"""
+set_unicode(0)
+constant   iPurgeComm=define_cffi_func(kernel,tStr)
+
 global procedure PurgeComm(atom hCom, atom flags)
 atom fn_val
    fn_val = c_func(iPurgeComm,{hCom, flags})
@@ -631,7 +773,16 @@ end procedure
 
 --SetCommBreak    Suspends character transmission for a specified communications device and places the transmission line in a break state.
 --REF: http://msdn.microsoft.com/en-us/library/aa363433(VS.85).aspx 
-constant iSetCommBreak=define_c_func(kernel,"SetCommBreak",{C_UINT},C_UINT)
+--constant iSetCommBreak=define_c_func(kernel,"SetCommBreak",{C_UINT},C_UINT)
+
+tStr="""
+BOOL WINAPI SetCommBreak(
+  _In_  HANDLE hFile
+);         
+"""
+set_unicode(0)
+constant   iSetCommBreak=define_cffi_func(kernel,tStr)
+
 global procedure SetCommBreak(atom hCom)
 atom fn_val
     fn_val = c_func(iSetCommBreak,{hCom})
@@ -648,7 +799,18 @@ end procedure
 
 --SetCommConfig   Sets the current configuration of a communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363434(VS.85).aspx
-constant iSetCommConfig=define_c_func(kernel,"SetCommConfig",{C_UINT,C_POINTER,C_UINT},C_UINT)
+--constant iSetCommConfig=define_c_func(kernel,"SetCommConfig",{C_UINT,C_POINTER,C_UINT},C_UINT)
+
+tStr="""
+BOOL WINAPI SetCommConfig(
+  _In_  HANDLE hCommDev,
+  _In_  LPCOMMCONFIG lpCC,
+  _In_  DWORD dwSize
+);         
+"""
+set_unicode(0)
+constant   iSetCommConfig=define_cffi_func(kernel,tStr)
+
 global procedure SetCommConfig(atom hCom, sequence config)
 atom fn_val, pCC
     pCC = allocate(COMCONF_SIZE)
@@ -664,7 +826,17 @@ end procedure
 
 --SetCommMask Specifies a set of events to be monitored for a communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363435(VS.85).aspx
-constant iSetCommMask=define_c_func(kernel,"SetCommMask",{C_UINT,C_UINT},C_UINT)
+--constant iSetCommMask=define_c_func(kernel,"SetCommMask",{C_UINT,C_UINT},C_UINT)
+
+tStr="""
+BOOL WINAPI SetCommMask(
+  _In_  HANDLE hFile,
+  _In_  DWORD dwEvtMask
+);             
+"""
+set_unicode(0)
+constant   iSetCommMask=define_cffi_func(kernel,tStr)
+
 global procedure SetCommMask(atom hCom, atom mask)
 atom fn_val
     fn_val = c_func(iSetCommMask,{hCom,mask})
@@ -672,7 +844,17 @@ end procedure
 
 
 --REF:http://msdn.microsoft.com/en-us/library/aa363436(VS.85).aspx
-constant iSetCommState=define_c_func(kernel,"SetCommState",{C_UINT,C_POINTER},C_INT)
+--constant iSetCommState=define_c_func(kernel,"SetCommState",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI SetCommState(
+  _In_  HANDLE hFile,
+  _In_  LPDCB lpDCB
+);             
+"""
+set_unicode(0)
+constant   iSetCommState=define_cffi_func(kernel,tStr)
+
 --SetCommState    Configures a communications device according to the specifications in a device-control block.
 -- The values argument is a sequence of the form: {paramètre:valeur;...}
 -- accepted parameters are:       baud: 110,330,600,1200,2400,4800,9600,14400,19200,38400,57600,115200,128000,256000
@@ -771,7 +953,17 @@ end procedure
 --                                ReadTotalTimeoutConstant,     + ReadTotalTimeoutConstant = ReceptionTimeout)
 --                                WriteTotalTimeoutMultiplier, ('number of char written'*WriteTotalTimeoutMultiplier
 --                                WriteTotalTimeoutConstant}    + WriteTotalTimeoutConstant = TransmissionTimeout 
-constant iSetCommTimeouts=define_c_func(kernel,"SetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+--constant iSetCommTimeouts=define_c_func(kernel,"SetCommTimeouts",{C_UINT,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI SetCommTimeouts(
+  _In_  HANDLE hFile,
+  _In_  LPCOMMTIMEOUTS lpCommTimeouts
+);          
+"""
+set_unicode(0)
+constant   iSetCommTimeouts=define_cffi_func(kernel,tStr)
+
 global procedure SetCommTimeouts(atom hCom,sequence timeouts)
 object fn_val
 atom  pTimeouts
@@ -784,7 +976,18 @@ end procedure
 
 --SetDefaultCommConfig    Sets the default configuration for a communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363438(VS.85).aspx
-constant iSetDefaultCommConfig=define_c_func(kernel,"SetDefaultCommConfigA",{C_POINTER,C_POINTER,C_UINT},C_UINT)
+--constant iSetDefaultCommConfig=define_c_func(kernel,"SetDefaultCommConfigA",{C_POINTER,C_POINTER,C_UINT},C_UINT)
+
+tStr="""
+BOOL WINAPI SetDefaultCommConfig(
+  _In_  LPCTSTR lpszName,
+  _In_  LPCOMMCONFIG lpCC,
+  _In_  DWORD dwSize
+);         
+"""
+set_unicode(0)
+constant   iSetDefaultCommConfig=define_cffi_func(kernel,tStr)
+
 global procedure SetDefaultCommConfig(integer device, sequence config)
 atom fn_val, pDevice, pCC
     pDevice = allocate_string(sprintf("com%d",device))
@@ -801,7 +1004,18 @@ end procedure
 
 --SetupComm   Initializes the communications parameters for a specified communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363439(VS.85).aspx
-constant iSetupComm=define_c_func(kernel,"SetupComm",{C_UINT,C_UINT,C_UINT},C_UINT)
+--constant iSetupComm=define_c_func(kernel,"SetupComm",{C_UINT,C_UINT,C_UINT},C_UINT)
+
+tStr="""
+BOOL WINAPI SetupComm(
+  _In_  HANDLE hFile,
+  _In_  DWORD dwInQueue,
+  _In_  DWORD dwOutQueue
+);            
+"""
+set_unicode(0)
+constant   iSetupComm=define_cffi_func(kernel,tStr)
+
 global procedure SetupComm(atom hCom, integer InQueueSize, integer OutQueueSize)
 atom fn_val
    fn_val = c_func(iSetupComm,{hCom, InQueueSize, OutQueueSize})
@@ -809,7 +1023,18 @@ end procedure
 
 --TransmitCommChar   Transmits a specified character ahead of any pending data in the output buffer of the specified communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363473(VS.85).aspx
-constant iTransmitCommChar=define_c_func(kernel,"TransmitCommChar",{C_UINT,C_CHAR},C_INT)
+--constant iTransmitCommChar=define_c_func(kernel,"TransmitCommChar",{C_HANDLE,C_CHAR},C_INT)
+
+tStr="""
+BOOL WINAPI TransmitCommChar(
+  _In_  HANDLE hFile,
+  _In_  char cChar
+);                
+"""
+-- char is not working
+set_unicode(0)
+constant   iTransmitCommChar=define_cffi_func(kernel,tStr)
+
 global procedure TransmitCommChar(atom hCom, integer char)
 atom fn_val
     fn_val = c_func(iTransmitCommChar,{hCom,char})
@@ -817,7 +1042,18 @@ end procedure
 
 --WaitCommEvent   Waits for an event to occur for a specified communications device.
 --REF: http://msdn.microsoft.com/en-us/library/aa363479(VS.85).aspx
-constant iWaitCommEvent=define_c_func(kernel,"WaitCommEvent",{C_UINT,C_POINTER,C_POINTER},C_INT)
+--constant iWaitCommEvent=define_c_func(kernel,"WaitCommEvent",{C_UINT,C_POINTER,C_POINTER},C_INT)
+
+tStr="""
+BOOL WINAPI WaitCommEvent(
+  _In_   HANDLE hFile,
+  _Out_  LPDWORD lpEvtMask,
+  [In]   LPOVERLAPPED lpOverlapped
+);                
+"""
+set_unicode(0)
+constant   iWaitCommEvent=define_cffi_func(kernel,tStr)
+
 
 
 ------------------------------

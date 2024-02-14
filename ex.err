@@ -1,53 +1,31 @@
-D:\devpool\phix\builtins\cffi.e:234 in procedure cffi_error()
-crash(`unknown size [`)
-    msg = `unknown size [`
-... called from D:\devpool\phix\builtins\cffi.e:483 in function do_type()
-    mtype = `[`
-    machine = 64'@'
-    substruct = 0
-    size = <novalue>
-    align = <novalue>
-    signed = 1
-    mname = `in`
-    bFunc = 0
-    k = 0
-    ftok = <novalue>
-... called from D:\devpool\phix\builtins\cffi.e:1299 in function define_c()
+D:\devpool\phix\builtins\cffi.e:1311 in function define_c()
+index 0 out of bounds, reading sequence length 6
     lib = 1.407099524e+14
-    cdef[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
-    cdef[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
-    cdef[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
-    cdef[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    cdef = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
     func = 1
     machine = 64'@'
-    name = `CreateFileA`
-    mtype = `[`
+    name = `TransmitCommChar`
+    mtype = `char`
     substruct = 0
-    size = 8
-    align = 8
+    size = 1
+    align = 1
     signed = 1
-    return_type = 33554440
-    ptype = <novalue>
+    return_type = 16777220
+    ptype = 33554440
     rid = <novalue>
-    args = {}
-... called from D:\devpool\phix\builtins\cffi.e:1344 in function define_cffi_func()
+    args = {33554440}
+... called from D:\devpool\phix\builtins\cffi.e:1349 in function define_cffi_func()
     lib = 1.407099524e+14
-    cdef[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
-    cdef[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
-    cdef[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
-    cdef[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    cdef = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
     machine = 64'@'
-... called from D:\devpool\projects\ardulink\serial.ew:71
+... called from D:\devpool\projects\ardulink\serial.ew:1036
 
 Global & Local Variables
 
  D:\devpool\phix\builtins\cffi.e:
-    s[1..115] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dwDes"
-    s[116..230] = "iredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAt"
-    s[231..345] = "tributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD                 dwFl"
-    s[346..419] = "agsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
-    ch = 93']'
-    sidx = 26
+    s = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
+    ch = 41')'
+    sidx = 72'H'
     L = 4
     SizeNames = {`char`,`uchar`,`short`,`ushort`,`int`,`uint`,`long`,`ulong`,`float`,`double`,`int64`,`uint64`,`ptr`,`size_t`}
     SizeSigns = {1,0,1,0,1,0,1,0,1,1,1,0,1,1}
@@ -101,18 +79,39 @@ Global & Local Variables
     libaddrs = <novalue>
     libnames = <novalue>
     libsafe = <novalue>
-    table = {{`GetLastError`,1.407099524e+14,{},33554436,1,1}}
+    table[1] = {`GetLastError`,1.407099524e+14,{},33554436,1,1}
+    table[2] = {`CreateFileA`,1.407099525e+14,{33554440,33554436,33554436,33554440,33554436,33554436,33554440},33554440,1,1}
+    table[3] = {`CloseHandle`,1.407099525e+14,{33554440},16777220,1,1}
+    table[4] = {`ReadFile`,1.407099525e+14,{33554440,33554440,33554436,33554440,33554440},16777220,1,1}
+    table[5] = {`WriteFile`,1.407099525e+14,{33554440,33554440,33554436,33554440,33554440},16777220,1,1}
+    table[6] = {`BuildCommDCBA`,1.407099526e+14,{33554440,33554440},16777220,1,1}
+    table[7] = {`BuildCommDCBAndTimeoutsA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
+    table[8] = {`ClearCommBreak`,1.407099525e+14,{33554440},16777220,1,1}
+    table[9] = {`ClearCommError`,1.407099525e+14,{33554440,33554440,33554440},16777220,1,1}
+    table[10] = {`CommConfigDialogA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
+    table[11] = {`EscapeCommFunction`,1.407099525e+14,{33554440,33554436},16777220,1,1}
+    table[12] = {`GetCommConfig`,1.407099525e+14,{33554440,33554440,33554440},16777220,1,1}
+    table[13] = {`GetCommMask`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[14] = {`GetCommModemStatus`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[15] = {`GetCommProperties`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[16] = {`GetCommState`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[17] = {`GetCommTimeouts`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[18] = {`GetDefaultCommConfigA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
+    table[19..20] = {{`PurgeComm`,1.407099525e+14,{33554440,33554436},16777220,1,1},{`SetCommBreak`,1.407099525e+14,{33554440},16777220,1,1}}
+    table[21] = {`SetCommConfig`,1.407099525e+14,{33554440,33554440,33554436},16777220,1,1}
+    table[22] = {`SetCommMask`,1.407099525e+14,{33554440,33554436},16777220,1,1}
+    table[23] = {`SetCommState`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[24] = {`SetCommTimeouts`,1.407099525e+14,{33554440,33554440},16777220,1,1}
+    table[25] = {`SetDefaultCommConfigA`,1.407099526e+14,{33554440,33554440,33554436},16777220,1,1}
+    table[26] = {`SetupComm`,1.407099525e+14,{33554440,33554436,33554436},16777220,1,1}
     previd = {}
     prevcb = {}
     tinit = 1
-    tcs = 2287286
-    tmax = 1
+    tcs = 2424926
+    tmax = 26
 
  D:\devpool\projects\ardulink\serial.ew:
-    tStr[1..112] = "HANDLE CreateFileA(\n  [in]           LPCSTR                lpFileName,\n  [in]           DWORD                 dw"
-    tStr[113..224] = "DesiredAccess,\n  [in]           DWORD                 dwShareMode,\n  [in, optional] LPSECURITY_ATTRIBUTES lpSecu"
-    tStr[225..336] = "rityAttributes,\n  [in]           DWORD                 dwCreationDisposition,\n  [in]           DWORD            "
-    tStr[337..419] = "     dwFlagsAndAttributes,\n  [in, optional] HANDLE                hTemplateFile\n);\n"
+    tStr = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
 
  D:\devpool\phix\builtins\VM\pprntfN.e:
     init2 = 0

@@ -66,7 +66,7 @@ HANDLE CreateFileA(
   [in, optional] HANDLE                hTemplateFile
 );
 """
---LPSECURITY_ATTRIBUTES replaced with LPVOID
+--LPSECURITY_ATTRIBUTES replaced with LPVOID (does not help) remove 'optional' also not
 set_unicode(0)
 constant iCreateFile=define_cffi_func(kernel,tStr)
 

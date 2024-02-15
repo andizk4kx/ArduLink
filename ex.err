@@ -1,31 +1,27 @@
-D:\devpool\phix\builtins\cffi.e:1311 in function define_c()
-index 0 out of bounds, reading sequence length 6
-    lib = 1.407099524e+14
-    cdef = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
-    func = 1
+D:\devpool\phix\builtins\cffi.e:234 in procedure cffi_error()
+crash(`struct expected`)
+    msg = `struct expected`
+... called from D:\devpool\phix\builtins\cffi.e:1103 in function define_struct()
+    struct_str[1..106] = "\"\ntypedef struct _COMMTIMEOUTS {\n  DWORD ReadIntervalTimeout;\n  DWORD ReadTotalTimeoutMultiplier;\n  DWORD "
+    struct_str[107..212] = "ReadTotalTimeoutConstant;\n  DWORD WriteTotalTimeoutMultiplier;\n  DWORD WriteTotalTimeoutConstant;\n} COMMTI"
+    struct_str[213..237] = "MEOUTS, *LPCOMMTIMEOUTS;\n"
     machine = 64'@'
-    name = `TransmitCommChar`
-    mtype = `char`
-    substruct = 0
-    size = 1
-    align = 1
-    signed = 1
-    return_type = 16777220
-    ptype = 33554440
-    rid = <novalue>
-    args = {33554440}
-... called from D:\devpool\phix\builtins\cffi.e:1349 in function define_cffi_func()
-    lib = 1.407099524e+14
-    cdef = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
-    machine = 64'@'
-... called from D:\devpool\projects\ardulink\serial.ew:1036
+    bAdd = 1
+    pack1 = 0
+    pp1 = <novalue>
+    typedef = 0
+    token = `"`
+    res = <novalue>
+... called from D:\devpool\projects\ardulink\serial.ew:24
 
 Global & Local Variables
 
  D:\devpool\phix\builtins\cffi.e:
-    s = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
-    ch = 41')'
-    sidx = 72'H'
+    s[1..115] = "\"\ntypedef struct _COMMTIMEOUTS {\n  DWORD ReadIntervalTimeout;\n  DWORD ReadTotalTimeoutMultiplier;\n  DWORD ReadTotal"
+    s[116..230] = "TimeoutConstant;\n  DWORD WriteTotalTimeoutMultiplier;\n  DWORD WriteTotalTimeoutConstant;\n} COMMTIMEOUTS, *LPCOMMTIM"
+    s[231..237] = "EOUTS;\n"
+    ch = 116't'
+    sidx = 3
     L = 4
     SizeNames = {`char`,`uchar`,`short`,`ushort`,`int`,`uint`,`long`,`ulong`,`float`,`double`,`int64`,`uint64`,`ptr`,`size_t`}
     SizeSigns = {1,0,1,0,1,0,1,0,1,1,1,0,1,1}
@@ -60,7 +56,7 @@ Global & Local Variables
     AltSize[40..78] = {13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13}
     AltSize[79..130] = {13,13,13,13,13,13,13,13,13,13,13,13,13,13,1,1,1,1,1,1,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,6,6,7,7,8,8,8,8}
     AltSize[131..154] = {8,8,8,8,9,10,11,11,11,12,12,12,12,12,12,12,7,5,5,5,3,1,2,5}
-    unicode = 0
+    unicode = -1
     UnicodeNames = {`TBYTE`,`TCHAR`}
     UnicodeAs = {{1,4},{1,4}}
     convert_types = 0
@@ -79,39 +75,17 @@ Global & Local Variables
     libaddrs = <novalue>
     libnames = <novalue>
     libsafe = <novalue>
-    table[1] = {`GetLastError`,1.407099524e+14,{},33554436,1,1}
-    table[2] = {`CreateFileA`,1.407099525e+14,{33554440,33554436,33554436,33554440,33554436,33554436,33554440},33554440,1,1}
-    table[3] = {`CloseHandle`,1.407099525e+14,{33554440},16777220,1,1}
-    table[4] = {`ReadFile`,1.407099525e+14,{33554440,33554440,33554436,33554440,33554440},16777220,1,1}
-    table[5] = {`WriteFile`,1.407099525e+14,{33554440,33554440,33554436,33554440,33554440},16777220,1,1}
-    table[6] = {`BuildCommDCBA`,1.407099526e+14,{33554440,33554440},16777220,1,1}
-    table[7] = {`BuildCommDCBAndTimeoutsA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
-    table[8] = {`ClearCommBreak`,1.407099525e+14,{33554440},16777220,1,1}
-    table[9] = {`ClearCommError`,1.407099525e+14,{33554440,33554440,33554440},16777220,1,1}
-    table[10] = {`CommConfigDialogA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
-    table[11] = {`EscapeCommFunction`,1.407099525e+14,{33554440,33554436},16777220,1,1}
-    table[12] = {`GetCommConfig`,1.407099525e+14,{33554440,33554440,33554440},16777220,1,1}
-    table[13] = {`GetCommMask`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[14] = {`GetCommModemStatus`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[15] = {`GetCommProperties`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[16] = {`GetCommState`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[17] = {`GetCommTimeouts`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[18] = {`GetDefaultCommConfigA`,1.407099526e+14,{33554440,33554440,33554440},16777220,1,1}
-    table[19..20] = {{`PurgeComm`,1.407099525e+14,{33554440,33554436},16777220,1,1},{`SetCommBreak`,1.407099525e+14,{33554440},16777220,1,1}}
-    table[21] = {`SetCommConfig`,1.407099525e+14,{33554440,33554440,33554436},16777220,1,1}
-    table[22] = {`SetCommMask`,1.407099525e+14,{33554440,33554436},16777220,1,1}
-    table[23] = {`SetCommState`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[24] = {`SetCommTimeouts`,1.407099525e+14,{33554440,33554440},16777220,1,1}
-    table[25] = {`SetDefaultCommConfigA`,1.407099526e+14,{33554440,33554440,33554436},16777220,1,1}
-    table[26] = {`SetupComm`,1.407099525e+14,{33554440,33554436,33554436},16777220,1,1}
-    previd = {}
-    prevcb = {}
-    tinit = 1
-    tcs = 2424926
-    tmax = 26
+    table = <novalue>
+    previd = <novalue>
+    prevcb = <novalue>
+    tinit = 0
+    tcs = <novalue>
+    tmax = 0
 
  D:\devpool\projects\ardulink\serial.ew:
-    tStr = "BOOL WINAPI TransmitCommChar(\n  _In_  HANDLE hFile,\n  _In_  char cChar\n);                \n"
+    pPCO = <novalue>
+    pDCB = <novalue>
+    tStr = <novalue>
 
  D:\devpool\phix\builtins\VM\pprntfN.e:
     init2 = 0

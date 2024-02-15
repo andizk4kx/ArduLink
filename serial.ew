@@ -12,6 +12,76 @@ include cffi.e
 --include machine.e
 --include get.e
 
+constant tCTO="""
+typedef struct _COMMTIMEOUTS {
+  DWORD ReadIntervalTimeout;
+  DWORD ReadTotalTimeoutMultiplier;
+  DWORD ReadTotalTimeoutConstant;
+  DWORD WriteTotalTimeoutMultiplier;
+  DWORD WriteTotalTimeoutConstant;
+} COMMTIMEOUTS, *LPCOMMTIMEOUTS;
+"""
+global constant integer idCTO=define_struct(tCTO)
+global atom pCTO=allocate_struct(idCTO)
+?get_struct_size(idCTO)
+
+--constant tDCB="""
+--typedef struct _DCB {
+--  DWORD DCBlength;
+--  DWORD BaudRate;
+--  DWORD fBinary : 1;
+--  DWORD fParity : 1;
+--  DWORD fOutxCtsFlow : 1;
+--  DWORD fOutxDsrFlow : 1;
+--  DWORD fDtrControl : 2;
+--  DWORD fDsrSensitivity : 1;
+--  DWORD fTXContinueOnXoff : 1;
+--  DWORD fOutX : 1;
+--  DWORD fInX : 1;
+--  DWORD fErrorChar : 1;
+--  DWORD fNull : 1;
+--  DWORD fRtsControl : 2;
+--  DWORD fAbortOnError : 1;
+--  DWORD fDummy2 : 17;
+--  WORD    wReserved;
+--  WORD    XonLim;
+--  WORD    XoffLim;
+--  BYTE    ByteSize;
+--  BYTE    Parity;
+--  BYTE    StopBits;
+--  char    XonChar;
+--  char    XoffChar;
+--  char    ErrorChar;
+--  char    EofChar;
+--  char    EvtChar;
+--  WORD    wReserved1;
+--} DCB, *LPDCB;
+--"""
+
+constant tDCB="""
+typedef struct _DCB {
+  DWORD DCBlength;
+  DWORD BaudRate;
+  DWORD fBitfield;
+  WORD  wReserved;
+  WORD  XonLim;
+  WORD  XoffLim;
+  BYTE  ByteSize;
+  BYTE  Parity;
+  BYTE  StopBits;
+  char  XonChar;
+  char  XoffChar;
+  char  ErrorChar;
+  char  EofChar;
+  char  EvtChar;
+  WORD  wReserved1;
+} DCB, *LPDCB;          
+"""
+global constant integer idDCB=define_struct(tDCB)
+global atom pDCB=allocate_struct(idDCB)
+?get_struct_size(idDCB)
+wait_key()
+
 constant kernel=open_dll("kernel32.dll")
 sequence tStr=""
 
@@ -277,7 +347,7 @@ constant
   DCB_EofChar = 24,
   DCB_EvtChar = 25,
   DCB_Reserved1=26,
-  DCB_SIZE = 28,
+  DCB_SIZE = get_struct_size(idDCB),
   -- flags bit mask
   DCB_fBinary = 1,
   DCB_fParity  =2,
@@ -300,7 +370,7 @@ constant
   CTO_ReadTotalTimeoutConstant =8,
   CTO_WriteTotalTimeoutMultiplier=12,
   CTO_WriteTotalTimeoutConstant=16,
-  CTO_SIZE = 20
+  CTO_SIZE = get_struct_size(idCTO)
   
 
 constant --COMMCONFIG structure
@@ -364,18 +434,16 @@ constant iBuildCommDCB=define_cffi_func(kernel,tStr)
 --BuildCommDCB    Fills a specified DCB structure with values specified in a device-control string.
 -- for description of settings string search "mode command" in windows help
 global function BuildCommDCB(sequence settings)
-object fn_val, pDCB, pSettings
-
+object fn_val,pSettings
    pSettings = allocate_string(settings)
-   pDCB = allocate(DCB_SIZE)
-   poke4(pDCB,DCB_SIZE) 
+   set_struct_field(idDCB,pDCB,"DCBlength",DCB_SIZE) 
    fn_val = c_func(iBuildCommDCB,{pSettings,pDCB})
    free(pSettings)
    if not fn_val then
-     free(pDCB)
-     pDCB=0
+        return 0
+   else
+        return pDCB
    end if
-   return pDCB
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363145(VS.85).aspx
@@ -392,19 +460,19 @@ constant  iBuildCommDCBAndTimeouts=define_cffi_func(kernel,tStr)
 -- BuildCommDCBAndTimeouts Translates a device-definition string into appropriate device-control block codes and places them into a device control block.
 -- for description of settings string search "mode command" in windows help
 global function BuildDCBAndTimeouts(sequence settings)
-atom fn_val, pSettings, pDCB, pCTO
+atom fn_val, pSettings
     pSettings = allocate_string(settings)
-    pDCB = allocate(DCB_SIZE)
-    poke4(pDCB,DCB_SIZE)
-    pCTO = allocate(CTO_SIZE)
+    --pDCB = allocate(DCB_SIZE)
+    --poke4(pDCB,DCB_SIZE)
+    set_struct_field(idDCB,pDCB,"DCBlength",DCB_SIZE) 
+    -- pCTO = allocate(CTO_SIZE)
     fn_val = c_func(iBuildCommDCBAndTimeouts,{pSettings,pDCB,pCTO})
     free(pSettings)
     if not fn_val then
-      free(pDCB)
-      free(pCTO)
-      return 0
+        return 0
+    else
+        return {pDCB,pCTO} 
     end if
-    return {pDCB,pCTO} 
 end function
 
 --REF: http://msdn.microsoft.com/en-us/library/aa363179(VS.85).aspx
@@ -1027,13 +1095,13 @@ end procedure
 
 tStr="""
 BOOL WINAPI TransmitCommChar(
-  _In_  HANDLE hFile,
-  _In_  char cChar
+    _In_    HANDLE hFile,
+    _In_    char cChar
 );                
 """
--- char is not working
+
 set_unicode(0)
-constant   iTransmitCommChar=define_cffi_func(kernel,tStr)
+constant     iTransmitCommChar=define_cffi_func(kernel,tStr)
 
 global procedure TransmitCommChar(atom hCom, integer char)
 atom fn_val

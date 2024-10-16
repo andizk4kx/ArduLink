@@ -1,0 +1,143 @@
+without warning
+include tinclasses.ew
+include serial.ew
+include translate.e
+
+constant baud={"1200","2400","4800","9600","19200","38400","57600","115200"}
+
+procedure goodbye()
+
+end procedure
+
+function scan_com_ports()
+atom hcom
+sequence retval={}
+for i=1 to 20 do
+    hcom=serial_open(i)
+    if hcom>0  then
+        serial_close(i)
+        retval=append(retval,(sprintf("COM%d:",i)))
+    end if
+    end for
+return retval
+end function
+
+-- create the App with the main Window
+Tapp myApp=new({xlt("HC06 Konfiguration")})
+myApp.width=480
+myApp.height=330
+myApp.xpos=ScreenWidth()/2 -450
+myApp.ypos=ScreenHeight()/2 -150
+myApp.exitrid=0
+myApp.icon="bluetooth.ico"
+myApp.exit_title=xlt("Beenden")
+myApp.exit_text=xlt("Sind sie sicher?")
+
+
+Tgroup group_analog =new({xlt("Serieller Port Parameter")})
+group_analog.xpos=10
+group_analog.ypos=10
+group_analog.width=230
+group_analog.height=130
+group_analog.parent()
+
+Tlabel lbl_port=new({"Port"})
+lbl_port.left()
+lbl_port.xpos=10
+lbl_port.ypos=30
+
+Tlabel lbl_speed=new({"Speed"})
+lbl_speed.left()
+lbl_speed.xpos=10
+lbl_speed.ypos=60
+
+Tdropdown list_com =new()
+list_com.xpos=90
+list_com.ypos=30
+
+Tdropdown   list_speed=new({"9600"})
+list_speed.xpos=90
+list_speed.ypos=60
+list_speed.add({baud})
+list_speed.seek(3)
+list_speed.tooltip="9600 = default Speed"
+
+Tbutton button_connect=new({xlt("Verbinden")})
+button_connect.xpos=10
+button_connect.ypos=90
+
+Tbutton button_disconnect=new({xlt("Trennen")})
+button_disconnect.xpos=90
+button_disconnect.ypos=90
+
+
+myApp.parent()
+
+Tgroup group_status =new({xlt("Status")})
+group_status.xpos=260
+group_status.ypos=10
+group_status.width=200
+group_status.height=130
+group_status.parent()
+
+Tlabel lbl_ver=new({"HC06 Version:"})
+lbl_ver.xpos=10
+lbl_ver.ypos=30
+lbl_ver.left()
+
+Tlabel lbl_connect=new({xlt("Verbindung:")})
+lbl_connect.xpos=10
+lbl_connect.ypos=60
+lbl_connect.left()
+
+myApp.parent()
+
+Tgroup group_hc6param =new({xlt("HC06 Parameter")})
+group_hc6param.xpos=10
+group_hc6param.ypos=150
+group_hc6param.width=450
+group_hc6param.height=130
+group_hc6param.parent()
+
+Tlabel lbl_bluename=new({xlt("Bluetooth Anzeige")})
+lbl_bluename.left()
+lbl_bluename.xpos=10
+lbl_bluename.ypos=30
+lbl_bluename.width=100
+
+Tedit edt_name=new({"HC06"})
+edt_name.tooltip="HC06 = default name (AT+NAMEHC06)"
+edt_name.xpos=110
+edt_name.ypos=30
+
+Tlabel lbl_baud=new({xlt("Neue Baudrate")})
+lbl_baud.xpos=10
+lbl_baud.ypos=60
+lbl_baud.left()
+
+Tdropdown list_baud=new({})
+list_baud.xpos=110
+list_baud.ypos=60
+list_baud.tooltip="9600 = default Baudrate  (AT+BAUDx)"
+list_baud.add({baud})
+list_baud.seek(list_speed.index())
+
+Tlabel lbl_pin=new({"Pair Pin"})
+lbl_pin.xpos=200
+lbl_pin.ypos=30
+
+Tedit edt_pin=new({"1234"})
+edt_pin.tooltip="1234 = default Pin (AT+PIN1234)"
+edt_pin.xpos=290
+edt_pin.ypos=30
+
+Tbutton btn_update=new({xlt("Aktualisieren")})
+btn_update.xpos=290
+btn_update.ypos=60
+btn_update.height=30
+
+myApp.update()
+
+list_com.add(scan_com_ports())
+list_com.seek(0)
+myApp.run()

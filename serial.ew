@@ -23,7 +23,8 @@ typedef struct _COMMTIMEOUTS {
 """
 global constant integer idCTO=define_struct(tCTO)
 global atom pCTO=allocate_struct(idCTO)
-?get_struct_size(idCTO)
+--?get_struct_size(idCTO)
+
 
 --constant tDCB="""
 --typedef struct _DCB {
@@ -79,8 +80,25 @@ typedef struct _DCB {
 """
 global constant integer idDCB=define_struct(tDCB)
 global atom pDCB=allocate_struct(idDCB)
-?get_struct_size(idDCB)
-wait_key()
+--?get_struct_size(idDCB)
+
+constant tCOMCONF="""
+typedef struct _COMMCONFIG {
+  DWORD dwSize;
+  WORD  wVersion;
+  WORD  wReserved;
+  DCB   dcb;
+  DWORD dwProviderSubType;
+  DWORD dwProviderOffset;
+  DWORD dwProviderSize;
+  WCHAR wcProviderData[1];
+} COMMCONFIG, *LPCOMMCONFIG;
+"""
+global constant integer idCOMCONF=define_struct(tCOMCONF)
+global atom pCOMCONF=allocate_struct(idCOMCONF)
+--?get_struct_size(idCOMCONF)
+--wait_key()
+
 
 constant kernel=open_dll("kernel32.dll")
 sequence tStr=""
@@ -158,6 +176,9 @@ atom fn_val, pComm
                     0
                     })
    free(pComm)
+    if equal(fn_val,#ffffffffffffffff) then
+        fn_val=-1
+    end if
    return fn_val                
 end function
 
@@ -462,10 +483,7 @@ constant  iBuildCommDCBAndTimeouts=define_cffi_func(kernel,tStr)
 global function BuildDCBAndTimeouts(sequence settings)
 atom fn_val, pSettings
     pSettings = allocate_string(settings)
-    --pDCB = allocate(DCB_SIZE)
-    --poke4(pDCB,DCB_SIZE)
     set_struct_field(idDCB,pDCB,"DCBlength",DCB_SIZE) 
-    -- pCTO = allocate(CTO_SIZE)
     fn_val = c_func(iBuildCommDCBAndTimeouts,{pSettings,pDCB,pCTO})
     free(pSettings)
     if not fn_val then

@@ -1,91 +1,111 @@
 include serial.ew
-include gui\tin\tinewg.exw
-include std\console.e
+--include gui\tin\tinewg.exw
+--include std\console.e
 
 atom hcom
 object rec
 
-constant set_home="G10 P0 L20 X0 Y0 Z0\n"
+constant set_home = "G10 P0 L20 X0 Y0 Z0\n"
 
 
-function wait_response(object seq="ok")
+function wait_response(object seq1="ok")
 object rec
-loop do
-    rec=serial_gets(hcom)
+do
+    rec = serial_gets(hcom)
     puts(1,rec)
     until match(seq,rec)>0 or match("err",rec)
-end loop
+
 return rec    
 end function
 
 function get_response()
 object rec
-loop do
+    do
     rec=serial_gets(hcom)
     puts(1,rec)
     until length(rec)>1
-end loop
+
     return rec
 end function
 
--- CommConfigDialog(7)
+--CommConfigDialog(8)
 
-hcom=serial_open(8)
-?hcom
+function scan_com_ports()
+sequence retval={}
+for i=1 to 20 do
+    hcom=serial_open(i)
+    if hcom>0  then
+        puts(1,sprintf("%b\n",hcom))
+        puts(1,sprintf("%d\n",hcom))
+        puts(1,sprintf("%b\n",-1))
+        serial_close(i)
+        retval=append(retval,(sprintf("COM%d:",i)))
+    end if
+    end for
+return retval
+end function
+
+?scan_com_ports()
+--hcom=serial_open(8)
+--?hcom
+
 ?GetCommState(hcom)
-SetCommState(hcom,"baud:115200;parity:none;bits:8;stop:1;control:magic")
+SetCommState(hcom,"baud:9600;parity:none;bits:8;stop:1;control:magic")
+
 ?GetCommState(hcom)
-wait_response("Grbl")
-serial_puts(hcom,"$$\n")
-wait_response()
-
-serial_puts(hcom,set_home)
-wait_response()
-
-serial_puts(hcom,"$\n")
-wait_response()
-
-
-serial_puts(hcom,"?\n")
-wait_response()
-
-serial_puts(hcom,"$I\n")
-wait_response()
-
-
-serial_puts(hcom,"G00 Z-3.0 F10\n")
-get_response()
-
-serial_puts(hcom,"G01 X110 Y110 F750 \n")
-get_response()
-
-serial_puts(hcom,"G01 X0 Y110 F750 \n")
-get_response()
-
-serial_puts(hcom,"G01 X1 Y110 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X1 Y0 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X2 Y0 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X2 Y110 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X3 Y110 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X3 Y0 F750\n")
-get_response()
-
-serial_puts(hcom,"G01 X0 Y0 F750\n")
-get_response()
-
-serial_puts(hcom,"G00 Z0 F10\n")
-get_response()
-
 serial_close(hcom)
 
+--{}=wait_response("Grbl")
+--serial_puts(hcom,"$$\n")
+--{}=wait_response()
+--
+--serial_puts(hcom,set_home)
+--{}=wait_response()
+--
+--serial_puts(hcom,"$\n")
+--{}=wait_response()
+--
+--
+--serial_puts(hcom,"?\n")
+--{}=wait_response()
+--
+--serial_puts(hcom,"$I\n")
+--{}=wait_response()
+--
+--
+--serial_puts(hcom,"G00 Z-3.0 F10\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X110 Y110 F750 \n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X0 Y110 F750 \n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X1 Y110 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X1 Y0 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X2 Y0 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X2 Y110 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X3 Y110 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X3 Y0 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G01 X0 Y0 F750\n")
+--{}=get_response()
+--
+--serial_puts(hcom,"G00 Z0 F10\n")
+--{}=get_response()
+--
+
+?gets(0)
 any_key()

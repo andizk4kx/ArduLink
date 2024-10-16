@@ -1,7 +1,7 @@
 -- translate.e 
 -- 1= Deutsch 2= English 3=bahasa indonesia
 atom defaultlang=1
-atom outlang = defaultlang
+atom outlang = 1
 
 sequence transtab={
             {"RTU Parameter","RTU parameters","",""},
@@ -29,8 +29,17 @@ sequence transtab={
             {"Verbindungsfehler","Connection error","Kesalahan koneksi",""},
             {"Suche mit Google nach ModBus ;-)","Search Google for Modbus ;-)","",""},
             {"Packete","Packets",""},
-            {"","",""},
-            {"","",""},
+            {"HC06 Konfiguration","HC06 Configuration",""},
+            {"Serieller Port Parameter","Serial port parameters",""},
+            {"Status","Status",""},
+            {"HC06 Parameter","HC06 parameters",""},
+            {"Trennen","Disconnect",""},
+            {"Verbinden","Connect",""},
+            {"Verbindung:","Connection:",""},
+            {"Bluetooth Anzeige","Bluetooth name",""},
+            {"Neue Baudrate","New Baudrate",""},
+            {"Aktualisieren","Update",""},
+            {"Verbindung:","Connection:",""},
             {"","",""},
             {"","",""},
             {"","",""},

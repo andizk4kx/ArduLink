@@ -2,6 +2,32 @@
 
 --without warning
 --****
+
+forward public procedure pb_SetStep(atom handle,atom step=1)
+forward public procedure pb_SetRange(atom handle,atom minimum=1,atom maximum=100)
+forward public function Window (sequence title="TinEwg Window",atom xpos=-1,atom ypos=-1,atom xsize=400, atom ysize=200)
+forward public function GetImageHeight (atom handle)
+forward public function GetImageWidth (atom handle)
+forward public function GetWindowLong (atom hwnd,atom index)
+forward public function SetWindowLong (atom hwnd,atom index,atom newlong)
+forward public function SendMessage (atom   hwnd,atom  msg,atom  wparam,atom  lparam)
+forward public function GetWindowRect (atom hwnd)
+forward public function GetClientRect (atom hwnd)
+forward public procedure InfoMsg ( object text, object title)
+forward public procedure WarnMsg ( object text, object title)
+forward public procedure ListSeek ( atom handle,atom pos)
+forward public procedure DeleteImage (atom handle)
+forward public function GetText ( atom handle)
+forward public function FindWindow (object  name,object classw=0)
+forward public  procedure  MoveWindow ( atom handle, atom xpos, atom ypos, atom height, atom width, atom repaint)
+forward public function WideCharSeq(sequence text)
+forward public function AppendSeparator (atom menuhandle)
+forward public function GetControlType(atom handle)
+forward function ctlGetControlIndex(atom handle)
+forward public procedure IPC_SendString (object target,sequence data)
+-- more forwards line 980...
+
+
 -- == tinEWG  - A simple wrapper for the Win32 Api
 -- <<TOC level=1
 -- <<LEVELTOC level=2 depth=3>>
@@ -216,20 +242,20 @@ type bool(integer x)
     return x=0 or x=1
 end type
 
-type byte(integer x)
+global type byte(integer x)
     return (x>-1) and (x<256)
 end type
 
 atom INPROC
 -- Maybe, someday we will need it
 constant tPOINTER    = 4,
-                tDWORD      = 4,
-                tUINT       = 4,
-                tWORD       = 2,
-                tBYTE       = 1
+                tDWORD      = 4
+--              tUINT       = 4,
+--              tWORD       = 2,
+--              tBYTE       = 1
 
 atom myLoadIcon, myLoadCursor,mySetCursor, myGetStockObject, myRegisterClassEx,
-        myCreateWindow,myCreate, myShowWindow, myUpdateWindow, myGetMessage,myPeekMessage,
+        myCreateWindow, myShowWindow, myUpdateWindow, myGetMessage,myPeekMessage,
         myTranslateMessage, myDispatchMessage, myPlaySound, myBeginPaint,
         myGetClientRect, myDrawText, myEndPaint, myPostQuitMessage, myDefWindowProc,mySetWindowText,
         myGetWindowText,myGetDesktopWindow,myGetActiveWindow,mySetActiveWindow,myGetTopWindow,myGetNextWindow,
@@ -263,9 +289,9 @@ atom mymciSendString,myGetShortPathName
 
 atom mySetProcessDefaultLayout
 -- atom MSG,PID,lpWideCharStr
-atom PID,lpWideCharStr
+atom lpWideCharStr
 atom myBrowseFolder,mySHGetPathFromIDList
-sequence th_modulname,th_pathname,th_procname
+--sequence th_modulname,th_pathname,th_procname
 
 atom myGetCurrentProcess,iswow64
 atom mygdiplusStartup,mygdiplusShutdown,myRtlGetNtVersionNumbers
@@ -331,7 +357,7 @@ public object  Void
 constant WinTimer =1
 
 
-atom EWG = 1
+global atom EWG = 1
 --**
 -- initially set to False; if set to True before running the event loop allows the
 -- generation of a Close event if the user clicks on a window's default close button;
@@ -746,7 +772,7 @@ Image = 36,
 ComboBox = 37,
 TabControl = 38
 
-atom Calendar = 32,
+global atom Calendar = 32,
 IpEdit = 33
 public atom RichEdit = 34
 
@@ -824,7 +850,7 @@ public atom MessageBoxReturnValue
 public atom WinBackGround
 atom DC_BrushColor   -- This is a Brush not a color
 atom DC_PenColor     -- This is a Pen not a color
-atom DC_BkColor=CL_DEFAULT       -- Backgroundcolor for Drawstring
+--atom DC_BkColor=CL_DEFAULT         -- Backgroundcolor for Drawstring
 atom DC_DefaultControl -- the default drawing control (same as the default memorybitmap in tinEWG)
 atom DC_ActColor     -- This is the actual Color (in EuWinGui for both Pen and Brush)
 atom DC_ActPenSize   -- Size of the Pen
@@ -935,7 +961,7 @@ object Default_Event=0  -- The Default Event is "every" Event
 object Data_Event=0  -- This holds the Ipc Event
 object Mci_Event=0 --
 object Paint_Event=0
-object ReSize_Event=0
+--object ReSize_Event=0
 --
 
 -- END EWG VARS --
@@ -959,8 +985,8 @@ procedure init_ewg()
     SpecialMode=NoDesigner
 end procedure
 
-
-
+forward public procedure SetPic ( atom handle, atom controltype=0, object imagehandle=DC_DefaultControl)
+forward public procedure SetText ( atom handle, flatsequence text, atom part=0)
 
 
 public function LoWord(atom dword)
@@ -2081,7 +2107,7 @@ end procedure
 -- Free the Buffer on Exit
 constant IPC_MAXDATA=8192
 atom IPC_DATASTRING=#54494e53
-atom IPC_DATADATA=#54494e44
+--atom IPC_DATADATA=#54494e44
 atom IPC_DATANONE=#0
 atom IPC_BUFFER=allocate(IPC_MAXDATA)
 atom IPC_COPYDATASTRUCT=allocate(12) --IPC_COPYDATASTRUCT
@@ -2126,7 +2152,7 @@ end procedure
 --==============================IPC for tinEWG=============================================
 
 -- Windows API --
-procedure FillRect(atom hdc,atom xpos,atom ypos,atom ywidth,atom xheight,atom brush)
+global procedure FillRect(atom hdc,atom xpos,atom ypos,atom ywidth,atom xheight,atom brush)
 --int FillRect(
 --  __in    HDC hDC,
 --  __in    const RECT *lprc,
@@ -2504,7 +2530,7 @@ end function
 -- ================================Menu funtions===============================
 -- ================================ComboBoxEx funtions=========================
 -- CHECK is_unused 
-procedure cbex_AddText(atom handle,sequence text)
+global procedure cbex_AddText(atom handle,sequence text)
 --  typedef struct {
 --  UINT      mask;
 --  INT_PTR iItem;
@@ -2524,7 +2550,7 @@ atom citem,szPointer,result
     poke4(citem+4,-1)
     poke4(citem+8,szPointer)
     poke4(citem+12,length(text)+1)
-    Void = SendMessage(handle,CBEM_INSERTITEM,0,citem)
+    result = SendMessage(handle,CBEM_INSERTITEM,0,citem)
     free(citem)
     free(szPointer)
     puts(1,sprintf("%d",result)&"\n")
@@ -2580,7 +2606,7 @@ end function
 --!!!!!!Unresolved PROBLEM
 -- it seems this doesn't work at all, i think we have to pass a structure to the C-Function
 -- which seems not possible in Euphoria
-function ChildWindowFromPoint(atom handle,atom x,atom y)
+public function ChildWindowFromPoint(atom handle,atom x,atom y)
 -- HWND WINAPI ChildWindowFromPoint(
 --  __in    HWND hWndParent,
 --  __in    POINT Point
@@ -2778,10 +2804,10 @@ public function SetFocus (atom handle)
 
 end function
 --******************************************************************************************************************
-public function LoadIcon ( atom hinstance, object string)
+public function LoadIcon ( atom hinstance, object string_)
 atom szPointer
 atom result
-    szPointer = allocate_string(string)
+    szPointer = allocate_string(string_)
     result = c_func(myLoadIcon,{hinstance ,szPointer})
     free(szPointer)
     return result
@@ -2791,7 +2817,7 @@ end function
 -- ***************************************************************************************************
 public function LoadImage ( atom myinstance, object name, atom ptype, atom width,atom height, atom flags)
 atom szPointer,handle
-atom hdc,memdc
+--atom hdc,memdc
     if atom (name)  then
         return c_func (myLoadImage,{myinstance,name,ptype,width,height,flags})
     else
@@ -2836,7 +2862,7 @@ atom     pRect
 --  __in     HWND hWnd,
 --  __out  LPRECT lpRect
 --);
-    pRect = allocate (tDWORD*4)
+    pRect = allocate (4*tDWORD)
     Void = c_func (myGetClientRect,{hwnd,pRect})
     rect = peek4s ({pRect,tDWORD})    
     free (pRect)
@@ -2853,9 +2879,9 @@ atom     pRect
 --  __out  LPRECT lpRect
 -- );
 
-    pRect = allocate (tDWORD*4)
+    pRect = allocate (4*tDWORD)
     Void = c_func (myGetWindowRect,{hwnd,pRect})
-    rect = peek4s ({pRect,tDWORD})
+    rect = peek4s ({pRect,4})
     free (pRect)
     return rect
 
@@ -3092,7 +3118,7 @@ public function LineLength(atom handle,atom char=-1)
 end function
 
 public function FindText (atom handle,sequence text,integer  start=0,integer  ende=-1,atom wholeword=1)
-atom pFINDTEXT,pString  
+atom pString    
 object result={}
 atom search =0  
     if wholeword then
@@ -3986,7 +4012,7 @@ end function
 
 function WndProc(atom hwnd, atom iMsg, atom wParam, atom lParam)
 atom ctlindex,Xfactor,Yfactor,result
-sequence rect
+--sequence rect
 --if ctlGetControlIndex(hwnd) >  0 then
 --if resize_controls[ctlGetControlIndex(hwnd)][rs_group]=gDesigner then 
 --  if iMsg=WM_NCHITTEST then
@@ -5145,7 +5171,7 @@ end function
 --
 
 public procedure DrawPoint ( atom xpos, atom ypos)
-atom hdc,oldobject,iscontrol,pPoint
+atom hdc,oldobject,iscontrol
     hdc=Null
     iscontrol=False
     
@@ -5272,7 +5298,7 @@ public procedure CopyMB ( atom sourcebitmap, atom xpos, atom   ypos, atom  xsize
 --  __in    int nHeightSrc,
 --  __in    DWORD dwRop
 --);
-atom hdcsrc,hdcdest,oldobjectsrc,oldobjectdest,hdc
+atom hdcsrc,hdcdest,oldobjectsrc,oldobjectdest
 -- source
         --hdc=c_func(myGetDC,{WinHwnd})
         hdcsrc=c_func(myCreateCompatibleDC,{0}) --hdc
@@ -5318,7 +5344,7 @@ public procedure CopyMBToControl (atom sourcebitmap, atom xpos,atom  ypos,atom  
 --  __in    int nHeightSrc,
 --  __in    DWORD dwRop
 --);
-atom hdcsrc,hdcdest,oldobjectsrc,oldobjectdest,hdc
+atom hdcsrc,hdcdest,oldobjectsrc
 -- source
         --hdc=c_func(myGetDC,{WinHwnd})
         hdcsrc=c_func(myCreateCompatibleDC,{0}) --hdc
@@ -5952,7 +5978,7 @@ atom icon_handle
 end procedure
 
 public function LoadIco ( sequence icon_file)
-atom icon_handle
+--atom icon_handle
         return  LoadImage(Null,icon_file,IMAGE_ICON,Null,Null,or_all({LR_LOADTRANSPARENT,LR_LOADFROMFILE}))
         --Void = SendMessage(ParentWnd,WM_SETICON,IMAGE_ICON,icon_handle)
 end function
@@ -6743,7 +6769,7 @@ end procedure
 --
 
 public function GetImageWidth (atom handle)
-atom pointer
+
 atom result
 --  pointer=allocate(28)
     Void=c_func(myGetObject,{handle,get_struct_size(idBITMAP),pBITMAP})
@@ -6761,7 +6787,7 @@ end function
 --
 
 public function GetImageHeight (atom handle)
-atom pointer
+
 atom result
 --?get_struct_size(idBITMAP)
 --  pointer=allocate(28)
@@ -6828,7 +6854,7 @@ end function
 
 public procedure SetColor ( atom handle, atom  text, atom  background)
 atom index,back_brush      
-        DC_BkColor=background
+        --DC_BkColor=background
         index = ctlGetControlIndex(handle)
                 if resize_controls[index][rs_controltype]= ListView then
                         Void = SendMessage (handle,LVM_SETBKCOLOR,0,background)
@@ -7104,7 +7130,7 @@ public function GetPageSize (atom dimensionflag)
 end function
 
 public function GetPrinterStringSize (sequence sstring,atom  font,atom  dimensionflag)
-atom hdc,sizestruct,szpointer,result
+atom sizestruct,szpointer,result
 atom oldfont
 --BOOL GetTextExtentPoint32(
 --  __in     HDC hdc,
@@ -7225,7 +7251,7 @@ end procedure
 public procedure PrintMB (atom sourcebitmap,atom  xpos,atom  ypos,atom  xsize,atom ysize)
                         
 
-atom hdcsrc,hdcdest,oldobjectsrc,oldobjectdest,hdc
+atom hdcsrc,hdcdest,oldobjectsrc
 
         hdcsrc=c_func(myCreateCompatibleDC,{0}) --hdc
     
@@ -7261,7 +7287,7 @@ public procedure PrintMBBlt (atom sourcebitmap,atom  xpos,atom   ypos,atom  xsiz
 --  __in    int nHeightSrc,
 --  __in    DWORD dwRop
 --);
-atom hdcsrc,hdcdest,oldobjectsrc,oldobjectdest,hdc
+atom hdcsrc,hdcdest,oldobjectsrc
 -- source
         --hdc=c_func(myGetDC,{WinHwnd})
         hdcsrc=c_func(myCreateCompatibleDC,{0}) --hdc
@@ -7405,7 +7431,7 @@ atom hwnd
 atom szAppName
 atom my_title
 atom WS_DEFVIS
-atom control_style,WS_Style,WS_EX_Style,old_style
+atom control_style,WS_Style,WS_EX_Style
 atom handle_of_parent
 sequence control_name,result
 
@@ -8035,7 +8061,7 @@ end function
 
 public function Window (sequence title="TinEwg Window",atom xpos=-1,atom ypos=-1,atom xsize=400, atom ysize=200)
 
-atom WS_Style,WS_EX_Style,hwnd,old_style
+atom WS_Style,WS_EX_Style,hwnd
 -- atom hdc
         --xsize=xsize+GetSystemMetrics(SM_CYBORDER)
         --ysize=ysize+GetSystemMetrics(SM_CYCAPTION)
@@ -8103,11 +8129,11 @@ end if
 return hwnd
 end function
 --******************************************************************************************************************
-procedure Register_Dialog()
-
-        Void = RegisterWindowClass("TinEWGDialog")
-
-end procedure
+--procedure Register_Dialog()
+--
+--      Void = RegisterWindowClass("TinEWGDialog")
+--
+--end procedure
 
 
 

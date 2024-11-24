@@ -242,9 +242,9 @@ type bool(integer x)
     return x=0 or x=1
 end type
 
-global type byte(integer x)
-    return (x>-1) and (x<256)
-end type
+--global type byte(integer x)
+--  return (x>-1) and (x<256)
+--end type
 
 atom INPROC
 -- Maybe, someday we will need it
@@ -349,8 +349,8 @@ atom ButtonProcAdress,
 
 -- EWG VARS 
 
-public constant True = 1
-public constant False = 0
+--public constant True = 1
+--public constant False = 0
 public constant Null = 0
 public object  Void
 
@@ -1570,7 +1570,16 @@ BOOL WINAPI EnumWindows(
     set_unicode(0)
     myEnumWindows=define_cffi_func(user32,tStr)
     
-    myFindWindow1 = link_c_func(user32,"FindWindowA",{C_INT,C_INT},C_INT)
+--  myFindWindow1 = link_c_func(user32,"FindWindowA",{C_INT,C_INT},C_INT)
+tStr="""
+HWND WINAPI FindWindow(
+  _In_opt_  LPCTSTR lpClassName,
+  _In_opt_  LPCTSTR lpWindowName
+);
+"""
+    set_unicode(0)
+    myFindWindow1 = define_cffi_func(user32,tStr)
+    
     myWinExec = link_c_func(kernel32,"WinExec",{C_POINTER,C_INT},C_INT)
     myDestroyWindow=link_c_func(user32,"DestroyWindow",{C_HANDLE},C_INT)
 -- Device Context handling

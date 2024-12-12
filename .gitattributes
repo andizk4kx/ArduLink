@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+# * text=auto
+*.e   linguist-language=Euphoria
+*.ex  linguist-language=Euphoria
+*.exw linguist-language=Euphoria
+*.EXW linguist-language=Euphoria
+*.ew linguist-language=Euphoria
+*.gnu linguist-language=Makefile
+*.mak linguist-language=Makefile
+*.wat linguist-language=Makefile
